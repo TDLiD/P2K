@@ -1,344 +1,67 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>P2K | DASHBOARD</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Syncopate:wght@700&display=swap" rel="stylesheet">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>P2K | NEURAL CONTROL</title>
+<link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
 <style>
-:root{--accent:#00ffa3;--bg:#050507;--glass:rgba(255,255,255,0.05)}
-*{margin:0;padding:0;box-sizing:border-box;cursor:crosshair}
-
-body {
-    background: linear-gradient(rgba(5, 5, 7, 0.8), rgba(5, 5, 7, 0.8)), url('https://picsum.photos/1920/1080'); 
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    color:white;
-    font-family:'Inter',sans-serif;
-    height:100vh;
-    overflow:hidden;
-    display:flex;
-}
-
-/* 사이드바 */
-.sidebar{
-    width:300px;
-    background:rgba(0, 0, 0, 0.6); 
-    border-right:1px solid rgba(0,255,163,0.2);
-    padding:20px;
-    display:flex;
-    flex-direction:column;
-    gap:20px;
-    backdrop-filter: blur(15px);
-    z-index: 10;
-}
-
-h2{font-family:'Syncopate',sans-serif;font-size:12px;color:var(--accent);letter-spacing:2px; margin-bottom: 5px;}
-.btn{background:var(--accent);border:none;padding:12px;font-weight:bold;clip-path:polygon(0 0,90% 0,100% 30%,100% 100%,10% 100%,0 70%);transition:0.3s;cursor: pointer; font-size: 11px;}
-.btn:hover{filter:brightness(1.2);transform:scale(1.02)}
-
-/* 메인 영역 */
-.main-content{flex:1;display:flex;flex-direction:column;position:relative; z-index: 1;}
-
-#bg-preview{
-    position:absolute;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    z-index:-1;
-    transition:0.5s;
-    opacity: 0.3;
-}
-
-/* 채팅 영역 - 여기가 핵심 */
-.chat-area{
-    flex:1;
-    padding:40px;
-    display:flex;
-    flex-direction:column;
-    justify-content:flex-end;
-    overflow: hidden;
-}
-
-#messages{
-    flex:1;
-    overflow-y:auto;
-    margin-bottom:20px;
-    display:flex;
-    flex-direction:column;
-    gap:12px; 
-    padding-right: 15px;
-    /* 스크롤바 디자인 */
-}
-#messages::-webkit-scrollbar { width: 4px; }
-#messages::-webkit-scrollbar-thumb { background: var(--accent); }
-
-.msg{
-    background:rgba(255, 255, 255, 0.05); 
-    padding:12px 18px;
-    border-radius:15px;
-    max-width:85%;
-    font-size:14px;
-    border-left:3px solid var(--accent); 
-    backdrop-filter: blur(5px);
-    animation: fadeIn 0.3s ease;
-}
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-.input-box{
-    display:flex;
-    gap:10px;
-    background:rgba(255,255,255,0.08);
-    padding:15px 25px;
-    border-radius:50px; 
-    backdrop-filter: blur(10px); 
-    border: 1px solid rgba(255,255,255,0.1);
-}
-input{background:none;border:none;color:white;flex:1;outline:none; font-size: 14px;}
-
-/* 팝업 UI */
-.overlay-ui{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(10, 10, 15, 0.98);border:1px solid var(--accent);padding:30px;display:none;z-index:1000;text-align:center; border-radius: 20px; backdrop-filter: blur(25px); min-width: 320px; box-shadow: 0 0 50px rgba(0, 255, 163, 0.3);}
-.room-item{padding:12px;background:var(--glass);margin-top:8px;border-radius:8px;font-size:13px; cursor: pointer; transition: 0.2s; border: 1px solid transparent;}
-.room-item:hover{background: rgba(0,255,163,0.15); border-color: var(--accent);}
+:root{--accent:#00ffa3;--bg:#020204;--glass:rgba(0,255,163,0.03)}*{margin:0;padding:0;box-sizing:border-box;cursor:crosshair}body{background:var(--bg);color:white;font-family:'JetBrains Mono',monospace;height:100vh;overflow:hidden;display:flex}#bg-canvas{position:fixed;top:0;left:0;z-index:0}.scan-line{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(rgba(18,16,16,0) 50%,rgba(0,255,163,0.05) 50%);background-size:100% 4px;z-index:1;pointer-events:none}.sidebar{width:340px;background:rgba(5,5,10,0.95);border-right:1px solid var(--accent);padding:30px;display:flex;flex-direction:column;gap:25px;backdrop-filter:blur(20px);z-index:10}.main-content{flex:1;padding:30px;display:grid;grid-template-columns:1fr 350px;grid-template-rows:80px 1fr 180px;gap:20px;z-index:2;position:relative}.fui-card{border:1px solid rgba(0,255,163,0.2);background:var(--glass);padding:20px;position:relative;clip-path:polygon(0 0,100% 0,100% calc(100% - 15px),calc(100% - 15px) 100%,0 100%)}.fui-card::after{content:'';position:absolute;top:0;right:0;width:20px;height:2px;background:var(--accent)}.card-label{font-family:'Syncopate';font-size:10px;color:var(--accent);margin-bottom:12px;display:flex;justify-content:space-between;opacity:0.8}.visual-box{grid-row:2;border:1px solid rgba(0,255,163,0.1);display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle,rgba(0,255,163,0.05) 0%,transparent 70%)}.stat-val{font-size:32px;color:var(--accent);text-shadow:0 0 15px var(--accent)}.btn{background:rgba(0,255,163,0.05);border:1px solid var(--accent);color:var(--accent);padding:12px;font-family:'Syncopate';font-size:9px;transition:0.3s;text-decoration:none;text-align:center}.btn:hover{background:var(--accent);color:black;box-shadow:0 0 20px var(--accent)}#radar{width:260px;height:260px;border:1px solid rgba(0,255,163,0.3);border-radius:50%;position:relative}#radar::before{content:'';position:absolute;top:50%;left:50%;width:100%;height:1px;background:rgba(0,255,163,0.2);transform:translate(-50%,-50%)}#radar::after{content:'';position:absolute;width:100%;height:100%;background:conic-gradient(from 0deg,var(--accent) 0deg,transparent 90deg);border-radius:50%;animation:rot 4s linear infinite;opacity:0.3}@keyframes rot{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
-
-<div class="sidebar">
-    <div style="text-align: center; padding-bottom: 10px;">
-        <h1 style="font-family: 'Syncopate'; font-size: 20px; color: var(--accent);">P2K WORLD</h1>
-        <p id="user-display" style="font-size: 10px; opacity: 0.6; margin-top: 5px; letter-spacing: 1px;"></p>
+<canvas id="bg-canvas"></canvas><div class="scan-line"></div>
+<aside class="sidebar">
+    <div style="border:1px solid var(--accent);padding:15px;text-align:center">
+        <h1 style="font-family:'Syncopate';font-size:18px;color:var(--accent)">P2K_OS v1.0</h1>
+        <p id="user-display" style="font-size:9px;opacity:0.6;margin-top:10px;color:var(--accent)"></p>
     </div>
-
-    <h2>P2K ROOMS</h2>
-    <button class="btn" onclick="createRoom()">+ CREATE ROOM</button>
-    <div id="room-list"></div>
-    
-    <hr style="opacity:0.1">
-    <h2>ENVIRONMENT</h2>
-    <div style="display:flex;gap:8px">
-        <div onclick="changeBg('#050507')" style="width:25px;height:25px;background:#050507;border:1px solid #444;border-radius:50%"></div>
-        <div onclick="changeBg('#1a1a2e')" style="width:25px;height:25px;background:#1a1a2e;border:1px solid #444;border-radius:50%"></div>
-        <div onclick="changeBg('#002b1d')" style="width:25px;height:25px;background:#002b1d;border:1px solid #444;border-radius:50%"></div>
+    <div class="fui-card">
+        <div class="card-label"><span>SYSTEM_CORE</span><span>[ACTIVE]</span></div>
+        <p style="font-size:11px;opacity:0.8;line-height:1.6">> Autonomous AI<br>> SW Cluster Architecture<br>> EV Battery Management</p>
     </div>
-
-    <hr style="opacity:0.1">
-    <h2>MINI GAMES</h2>
-    <button class="btn" style="background:#4e00ff;color:white" onclick="startGame('clicker')">FAST CLICKER</button>
-    
-    <div style="margin-top: auto;">
-        <button class="btn" style="width: 100%; background: #111; color: var(--accent); border: 1px solid var(--accent);" onclick="openProfile()">MY PROFILE</button>
-        <button class="btn" style="width: 100%; background: transparent; color: #ff4e4e; font-size: 10px; margin-top: 10px;" onclick="location.href='login.html'">SYSTEM LOGOUT</button>
+    <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="fui-card" style="padding:10px">👨‍💻 CEO / AV & AI</div>
+        <div class="fui-card" style="padding:10px">🤖 CEO / AI & SW</div>
+        <div class="fui-card" style="padding:10px">🔋 DIR / EV BATTERY</div>
     </div>
-</div>
-
-<div class="main-content">
-    <div id="bg-preview"></div>
-    <div style="padding:40px 40px 0 40px">
-        <h1 id="room-title" style="font-family:'Syncopate'; font-size: 2.5rem; text-shadow: 0 0 20px rgba(0,255,163,0.3);">LOBBY</h1>
+    <div style="margin-top:auto;display:flex;flex-direction:column;gap:10px">
+        <button class="btn" onclick="openProfile()">USER_PROFILE</button>
+        <button class="btn" style="border-color:#ff4e4e;color:#ff4e4e" onclick="location.href='login.html'">TERMINATE_SESSION</button>
     </div>
-    
-    <div class="chat-area">
-        <div id="messages"></div>
-        <div class="input-box">
-            <input type="text" id="chat-input" placeholder="Type message or ask AI..." onkeypress="if(event.keyCode==13)sendMsg()">
-            <span onclick="sendEmoji('✨')" style="cursor:pointer; filter: grayscale(1);">✨</span>
-            <button id="send-btn" onclick="sendMsg()" style="background:none;border:none;color:var(--accent);font-weight:bold; cursor:pointer; letter-spacing: 1px;">SEND</button>
+</aside>
+<main class="main-content">
+    <header style="grid-column:span 2;display:flex;justify-content:space-between;align-items:center">
+        <h1 style="font-family:'Syncopate';font-size:2.2rem;letter-spacing:-1px">COMMAND_CENTER</h1>
+        <div style="text-align:right"><div id="clock" style="font-size:24px;color:var(--accent)">00:00:00</div><div style="font-size:10px;opacity:0.5">ESTABLISHED: 2026.02.13</div></div>
+    </header>
+    <section class="visual-box">
+        <div id="radar"></div>
+        <div style="margin-top:20px;font-size:11px;color:var(--accent);letter-spacing:2px">SCANNING_NEURAL_NODES...</div>
+    </section>
+    <section style="display:flex;flex-direction:column;gap:20px">
+        <div class="fui-card"><div class="card-label"><span>AI_LOAD</span></div><div class="stat-val" id="ai-load">98.2%</div></div>
+        <div class="fui-card"><div class="card-label"><span>ENERGY_STORAGE</span></div><div class="stat-val">84.0<span style="font-size:14px">kWh</span></div></div>
+    </section>
+    <section class="fui-card" style="grid-column:span 2">
+        <div class="card-label"><span>LATEST_DATA_STREAM</span></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;font-size:10px;opacity:0.7">
+            <div>> L4_AUTO: SENSOR FUSION ENGINE ON<br>> LATENCY: 1.2ms</div>
+            <div>> AI_SW: ON-DEVICE OPTIMIZATION<br>> COMPRESSION: 72%</div>
+            <div>> EV_BAT: MODULE TEMP STABLE<br>> TEMP: 31.4°C</div>
         </div>
-    </div>
+    </section>
+</main>
+<div id="profile-ui" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#050507;border:1px solid var(--accent);padding:30px;display:none;z-index:1000;width:320px;box-shadow:0 0 50px rgba(0,255,163,0.2)">
+    <h2 style="font-family:'Syncopate';font-size:12px;color:var(--accent);margin-bottom:20px">USER_PROFILE</h2>
+    <input id="prof-id" readonly style="width:100%;background:#111;border:1px solid var(--accent);color:white;padding:12px;margin-bottom:20px;font-family:'JetBrains Mono'">
+    <button class="btn" style="width:100%" onclick="closeProfile()">CLOSE_WINDOW</button>
 </div>
-
-<div id="profile-ui" class="overlay-ui">
-    <h2 style="margin-bottom:20px">USER PROFILE</h2>
-    <input type="text" id="prof-id" readonly style="opacity: 0.5; background: #222; border: 1px solid #444; color: #888; padding: 10px; width: 100%; margin-bottom: 10px;">
-    <input type="email" id="prof-email" placeholder="Email" style="background: #222; border: 1px solid #444; color: #fff; padding: 10px; width: 100%; margin-bottom: 10px;">
-    <input type="password" id="prof-pw" placeholder="Password" style="background: #222; border: 1px solid #444; color: #fff; padding: 10px; width: 100%; margin-bottom: 20px;">
-    <div style="display: flex; gap: 10px;">
-        <button class="btn" style="flex:1" onclick="updateProfile()">UPDATE</button>
-        <button class="btn" style="flex:1; background: #333;" onclick="closeProfile()">CLOSE</button>
-    </div>
-</div>
-
-<div id="game-ui" class="overlay-ui">
-    <h2 id="game-name" style="margin-bottom:15px">GAME</h2>
-    <canvas id="game-canvas" width="300" height="300"></canvas>
-    <div id="game-score" style="margin:10px 0; font-family: 'Syncopate'; color: var(--accent);">Score: 0</div>
-    <button class="btn" onclick="closeGame()">EXIT GAME</button>
-</div>
-
-<script type="module">
-import{initializeApp}from"https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import{getDatabase,ref,set,get,push,onValue,onChildAdded,update}from"https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-const cfg={databaseURL:"https://jakor-52390-default-rtdb.firebaseio.com"};
-const app=initializeApp(cfg),db=getDatabase(app);
-let currentRoom = 'lobby';
-const userId = localStorage.getItem('p2k_user') || "Guest_"+Math.floor(Math.random()*1000);
-const GEMINI_API_KEY = "AIzaSyDwF8_Q9S1-naaAgyfMWhFYJ2u_be3wsBs";
-
-document.getElementById('user-display').innerText = `ID: ${userId} // STATUS: CONNECTED`;
-
-// 1. 방 관리 및 자동 로비 접속
-window.createRoom = () => {
-    const name = prompt("Room Name?");
-    if(name) push(ref(db, 'rooms'), { name, creator: userId });
-};
-
-onValue(ref(db, 'rooms'), (snap) => {
-    const list = document.getElementById('room-list');
-    list.innerHTML = '';
-    snap.forEach((child) => {
-        const div = document.createElement('div');
-        div.className = 'room-item';
-        div.innerText = child.val().name;
-        div.onclick = () => joinRoom(child.key, child.val().name);
-        list.appendChild(div);
-    });
-});
-
-function joinRoom(id, name) {
-    currentRoom = id;
-    document.getElementById('room-title').innerText = name;
-    document.getElementById('messages').innerHTML = '';
-    loadMessages();
-}
-
-// 2. 채팅 기능
-window.sendMsg = async () => {
-    const input = document.getElementById('chat-input');
-    const text = input.value.trim();
-    if(!text) return;
-    
-    push(ref(db, `chats/${currentRoom}`), { user: userId, text: text, time: Date.now() });
-    input.value = '';
-    
-    // AI 답변 실행
-    await askAI(text);
-};
-
-// 2. 최적화된 askAI 함수
-async function askAI(promptText) {
-    const inputField = document.getElementById('chat-input');
-    inputField.placeholder = "AI Thinking...";
-    inputField.disabled = true;
-
-    // 해결 포인트: 2026년 기준 가장 안정적인 v1beta 경로와 정식 모델명을 사용합니다.
-    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-
-    try {
-        const response = await fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                contents: [{ 
-                    parts: [{ text: `너는 P2K WORLD의 가이드 AI야. 짧고 미래지향적인 톤으로 답변해줘. 질문: ${promptText}` }] 
-                }]
-            })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            // 상세 에러 로깅
-            console.error("API 에러 상세:", data);
-            throw new Error(data.error ? data.error.message : "응답 실패");
-        }
-
-        if (data.candidates && data.candidates[0].content) {
-            const aiText = data.candidates[0].content.parts[0].text;
-            
-            // Firebase에 AI 답변 전송 (채팅창에 출력됨)
-            push(ref(db, `chats/${currentRoom}`), { 
-                user: "✨ P2K_AI", 
-                text: aiText, 
-                time: Date.now(),
-                isAI: true
-            });
-        }
-
-    } catch (e) {
-        console.error("최종 에러:", e);
-        const msgDiv = document.getElementById('messages');
-        const errDiv = document.createElement('div');
-        errDiv.className = 'msg';
-        errDiv.style.borderLeft = "3px solid #ff4e4e";
-        // 404 에러나 권한 에러 발생 시 사용자에게 정확한 이유 노출
-        errDiv.innerHTML = `<strong>SYSTEM:</strong> ${e.message}`;
-        msgDiv.appendChild(errDiv);
-    } finally {
-        inputField.placeholder = "Ask AI anything...";
-        inputField.disabled = false;
-        inputField.focus();
-        document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
-    }
-}
-
-
-window.sendEmoji = (emo) => {
-    push(ref(db, `chats/${currentRoom}`), { user: userId, text: emo, isEmoji: true });
-};
-
-function loadMessages() {
-    const msgDiv = document.getElementById('messages');
-    onChildAdded(ref(db, `chats/${currentRoom}`), (snap) => {
-        const m = snap.val();
-        const div = document.createElement('div');
-        div.className = 'msg';
-        if(m.isAI) div.style.borderLeft = "3px solid #4e00ff";
-        div.innerHTML = `<strong>${m.user}:</strong> ${m.text}`;
-        msgDiv.appendChild(div);
-        msgDiv.scrollTop = msgDiv.scrollHeight;
-    });
-}
-
-// 초기 로비 접속
-joinRoom('lobby', 'LOBBY');
-
-// 기타 기능 (배경, 프로필, 게임)
-window.changeBg = (color) => { document.getElementById('bg-preview').style.background = color; };
-window.openProfile = async () => {
-    const s = await get(ref(db, `users/${userId}`));
-    if(s.exists()){
-        document.getElementById('prof-id').value = userId;
-        document.getElementById('prof-email').value = s.val().email || '';
-        document.getElementById('profile-ui').style.display = 'block';
-    } else {
-        document.getElementById('prof-id').value = userId;
-        document.getElementById('profile-ui').style.display = 'block';
-    }
-};
-window.closeProfile = () => { document.getElementById('profile-ui').style.display = 'none'; };
-window.updateProfile = async () => {
-    await update(ref(db, `users/${userId}`), { 
-        email: document.getElementById('prof-email').value,
-        pw: document.getElementById('prof-pw').value 
-    });
-    alert("Updated."); closeProfile();
-};
-
-let gameInterval;
-window.startGame = (type) => {
-    const ui = document.getElementById('game-ui');
-    const canvas = document.getElementById('game-canvas');
-    const ctx = canvas.getContext('2d');
-    ui.style.display = 'block';
-    let score = 0;
-    document.getElementById('game-name').innerText = "FAST CLICKER";
-    let target = { x: 150, y: 150 };
-    canvas.onclick = () => {
-        score++;
-        target = { x: 20+Math.random()*260, y: 20+Math.random()*260 };
-        document.getElementById('game-score').innerText = `Score: ${score}`;
-    };
-    gameInterval = setInterval(() => {
-        ctx.clearRect(0,0,300,300);
-        ctx.fillStyle = '#00ffa3';
-        ctx.beginPath(); ctx.arc(target.x, target.y, 15, 0, Math.PI*2); ctx.fill();
-    }, 100);
-};
-window.closeGame = () => { clearInterval(gameInterval); document.getElementById('game-ui').style.display = 'none'; };
+<script>
+document.addEventListener('DOMContentLoaded',()=>{const u=localStorage.getItem('p2k_user')||"ADMIN_SESSION_01",d=document.getElementById('user-display');if(d)d.innerText=`IDENT_ID: ${u}`;initBackground();setInterval(updateClock,1000);updateClock()});
+function updateClock(){const e=document.getElementById('clock');if(e)e.innerText=new Date().toTimeString().split(' ')[0]}
+function initBackground(){const c=document.getElementById('bg-canvas'),ctx=c.getContext('2d');let w,h,pts=[];const res=()=>{w=c.width=window.innerWidth;h=c.height=window.innerHeight};window.onresize=res;res();for(let i=0;i<50;i++)pts.push({x:Math.random()*w,y:Math.random()*h,v:Math.random()*0.3+0.1});const draw=()=>{ctx.fillStyle='rgba(2,2,4,0.15)';ctx.fillRect(0,0,w,h);ctx.strokeStyle='rgba(0,255,163,0.1)';ctx.lineWidth=0.5;pts.forEach(p=>{p.y-=p.v;if(p.y<0)p.y=h;ctx.beginPath();ctx.moveTo(0,p.y);ctx.lineTo(w,p.y);ctx.stroke();ctx.fillStyle='var(--accent)';ctx.fillRect(p.x,p.y,2,1)});requestAnimationFrame(draw)};draw()}
+function openProfile(){document.getElementById('prof-id').value=localStorage.getItem('p2k_user')||"ADMIN_SESSION_01";document.getElementById('profile-ui').style.display='block'}
+function closeProfile(){document.getElementById('profile-ui').style.display='none'}
 </script>
 </body>
 </html>
