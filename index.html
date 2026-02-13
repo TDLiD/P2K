@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FUTURE VISION |P2K pioneering the future</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@900&family=Syncopate:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --accent: #00ffa3;
+            --bg: #050507;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; cursor: none; }
+
+        body {
+            background-color: var(--bg);
+            color: white;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* 배경 캔버스 */
+        #canvas-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            filter: blur(80px);
+            opacity: 0.6;
+        }
+
+        /* 커스텀 마우스 커서 */
+        #cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            background: var(--accent);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            mix-blend-mode: difference;
+            transition: transform 0.1s ease-out;
+        }
+
+        #cursor-follower {
+            position: fixed;
+            width: 60px;
+            height: 60px;
+            border: 1px solid var(--accent);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9998;
+            transition: all 0.3s ease-out;
+        }
+
+        /* 메인 콘텐츠 */
+        .container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 10%;
+        }
+
+        .label {
+            font-size: 12px;
+            letter-spacing: 0.5rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s forwards 0.5s;
+        }
+
+        .main-title {
+            font-family: 'Syncopate', sans-serif;
+            font-size: clamp(3rem, 10vw, 8rem);
+            line-height: 0.9;
+            text-transform: uppercase;
+            margin-bottom: 40px;
+            opacity: 0;
+            transform: scale(0.9);
+            animation: scaleIn 1.5s forwards;
+        }
+
+        .main-title span {
+            display: block;
+            -webkit-text-stroke: 1px white;
+            color: transparent;
+            transition: 0.5s;
+        }
+
+        .main-title span:hover {
+            color: white;
+            -webkit-text-stroke: 1px var(--accent);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+            opacity: 0;
+            animation: fadeIn 2s forwards 1.2s;
+        }
+
+        .nav-item {
+            text-decoration: none;
+            color: rgba(255,255,255,0.5);
+            font-weight: bold;
+            font-size: 14px;
+            letter-spacing: 2px;
+            transition: 0.3s;
+            position: relative;
+        }
+
+        .nav-item::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--accent);
+            transition: 0.3s;
+        }
+
+        .nav-item:hover { color: white; }
+        .nav-item:hover::after { width: 100%; }
+
+        /* 애니메이션 */
+        @keyframes fadeInUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes scaleIn {
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        /* 인터랙티브 장식 요소 */
+        .frame {
+            position: fixed;
+            padding: 40px;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            pointer-events: none;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="cursor"></div>
+    <div id="cursor-follower"></div>
+
+    <div id="canvas-wrapper">
+        <canvas id="bg-canvas"></canvas>
+    </div>
+
+    <div class="frame">
+        <div style="font-size: 10px; opacity: 0.5;">P2K. 2026 / P2K pioneering the future</div>
+        <div style="font-size: 10px; opacity: 0.5;">SCROLL TO EXPLORE</div>
+    </div>
+
+    <main class="container">
+        <div class="label">P2K Who are they?</div>
+        <h1 class="main-title">
+            <span>PIONEER</span>
+            <span style="margin-left: 20px;">P2K. FUTURE</span>
+        </h1>
+        <nav class="nav-links">
+            <a href="pics.html" class="nav-item">ENTER EXHIBITION</a>
+            <a href="#" class="nav-item">ARCHIVE</a>
+            <a href="#" class="nav-item">ABOUT</a>
+        </nav>
+    </main>
+
+    <script>
+        // 1. 커스텀 커서 로직
+        const cursor = document.getElementById('cursor');
+        const follower = document.getElementById('cursor-follower');
+        
+        document.addEventListener('mousemove', (e) => {
+            const x = e.clientX;
+            const y = e.clientY;
+            
+            cursor.style.transform = `translate3d(${x - 10}px, ${y - 10}px, 0)`;
+            // 팔로워는 약간 늦게 따라오도록 설정 (CSS transition 이용)
+            follower.style.transform = `translate3d(${x - 30}px, ${y - 30}px, 0)`;
+        });
+
+        // 링크 위에 올라갔을 때 커서 확장
+        document.querySelectorAll('.nav-item').forEach(link => {
+            link.addEventListener('mouseenter', () => {
+                follower.style.transform += ' scale(1.5)';
+                follower.style.backgroundColor = 'rgba(0, 255, 163, 0.1)';
+            });
+            link.addEventListener('mouseleave', () => {
+                follower.style.backgroundColor = 'transparent';
+            });
+        });
+
+        // 2. 인터랙티브 배경 (Active Theory 스타일)
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let mouseX = 0, mouseY = 0;
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', resize);
+        window.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        resize();
+
+        // 부드러운 유동체 효과
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            
+            // 마우스 위치에 따른 유동적인 원형 그라데이션
+            const time = Date.now() * 0.001;
+            const x = mouseX + Math.sin(time) * 50;
+            const y = mouseY + Math.cos(time) * 50;
+
+            const gradient = ctx.createRadialGradient(x, y, 0, x, y, width * 0.8);
+            gradient.addColorStop(0, '#00ffa3');
+            gradient.addColorStop(0.5, '#4e00ff');
+            gradient.addColorStop(1, '#050507');
+
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, width, height);
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
