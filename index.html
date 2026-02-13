@@ -2,89 +2,162 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
 <title>FUTURE VISION | P2K</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@900&family=Syncopate:wght@700&display=swap" rel="stylesheet">
 <style>
-:root{--accent:#00ffa3;--bg:#050507}*{margin:0;padding:0;box-sizing:border-box;cursor:none}
+:root{--accent:#00ffa3;--bg:#050507}
+/* PC에서만 커서 숨김 */
+@media (pointer: fine) {
+    *{margin:0;padding:0;box-sizing:border-box;cursor:none}
+}
+/* 모바일 기본 초기화 */
+*{margin:0;padding:0;box-sizing:border-box}
 
-/* 🖼️ 안정적인 배경 이미지 경로로 수정 */
 body {
     background: 
         linear-gradient(rgba(5, 5, 7, 0.6), rgba(5, 5, 7, 0.6)), 
-        /* source.unsplash 대신 실제 Unsplash 고유 주소 사용 */
         url('https://picsum.photos/1920/1080'); 
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
-    background-color: #050507; /* 이미지 로딩 전 기본 배경색 */
+    background-color: #050507;
     color: white;
     font-family: 'Inter', sans-serif;
     overflow: hidden;
     height: 100vh;
+    touch-action: none; /* 모바일 드래그 시 새로고침 방지 */
 }
 
-/* 기존 캔버스 레이어의 투명도를 조절하여 배경 이미지와 섞이게 함 */
 #canvas-wrapper{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;filter:blur(60px);opacity:0.4}
 
-#cursor{position:fixed;width:20px;height:20px;background:var(--accent);border-radius:50%;pointer-events:none;z-index:9999;mix-blend-mode:difference;transition:transform 0.1s ease-out}
-#cursor-follower{position:fixed;width:60px;height:60px;border:1px solid var(--accent);border-radius:50%;pointer-events:none;z-index:9998;transition:all 0.3s ease-out}
+/* 커서 스타일: 터치 기기에서는 미출력 */
+#cursor{position:fixed;width:20px;height:20px;background:var(--accent);border-radius:50%;pointer-events:none;z-index:9999;mix-blend-mode:difference;transition:transform 0.1s ease-out;display:none}
+#cursor-follower{position:fixed;width:60px;height:60px;border:1px solid var(--accent);border-radius:50%;pointer-events:none;z-index:9998;transition:all 0.3s ease-out;display:none}
+
+@media (pointer: fine) {
+    #cursor, #cursor-follower { display: block; }
+}
+
 .top-nav{position:fixed;top:40px;right:40px;z-index:1000}
 .container{height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:0 10%}
 .label{font-size:12px;letter-spacing:0.5rem;color:var(--accent);text-transform:uppercase;margin-bottom:20px;opacity:0;transform:translateY(20px);animation:fadeInUp 1s forwards 0.5s}
-.main-title{font-family:'Syncopate',sans-serif;font-size:clamp(3rem,10vw,8rem);line-height:0.9;text-transform:uppercase;margin-bottom:40px;opacity:0;transform:scale(0.9);animation:scaleIn 1.5s forwards}
+
+/* 반응형 타이틀 폰트 크기 */
+.main-title{font-family:'Syncopate',sans-serif;font-size:clamp(2.5rem, 8vw, 8rem);line-height:0.9;text-transform:uppercase;margin-bottom:40px;opacity:0;transform:scale(0.9);animation:scaleIn 1.5s forwards}
 .main-title span{display:block;-webkit-text-stroke:1px white;color:transparent;transition:0.5s}
-.main-title span:hover{color:white;-webkit-text-stroke:1px var(--accent)}
-.nav-links{display:flex;gap:30px;opacity:0;animation:fadeIn 2s forwards 1.2s;z-index:100}
+
+/* PC 호버 효과 유지 */
+@media (hover: hover) {
+    .main-title span:hover{color:white;-webkit-text-stroke:1px var(--accent)}
+}
+
 .nav-item{text-decoration:none;color:rgba(255,255,255,0.5);font-weight:bold;font-size:14px;letter-spacing:2px;transition:0.3s;position:relative;padding:5px 0}
 .nav-item.highlight{color:var(--accent);border:1px solid var(--accent);padding:10px 25px;border-radius:30px;font-size:12px}
 .nav-item::after{content:'';position:absolute;bottom:-5px;left:0;width:0;height:1px;background:var(--accent);transition:0.3s}
 .nav-item:hover{color:white}.nav-item:hover::after{width:100%}
 .nav-item.highlight:hover{background:rgba(0,255,163,0.1);border-color:white}
+
 @keyframes fadeInUp{to{opacity:1;transform:translateY(0)}}
 @keyframes scaleIn{to{opacity:1;transform:scale(1)}}
 @keyframes fadeIn{to{opacity:1}}
+
 .frame{position:fixed;padding:40px;width:100%;height:100%;display:flex;justify-content:space-between;align-items:flex-end;pointer-events:none;z-index:10}
+
+/* 모바일 레이아웃 최적화 */
+@media (max-width: 768px) {
+    .top-nav { top: 20px; right: 20px; }
+    .main-title span { margin-left: 0 !important; } /* 모바일에서 정렬 깨짐 방지 */
+    .frame { padding: 20px; justify-content: center; }
+}
 </style>
 </head>
 <body>
 <div id="cursor"></div><div id="cursor-follower"></div>
 <div id="canvas-wrapper"><canvas id="bg-canvas"></canvas></div>
-<div class="top-nav"><a href="login.html" class="nav-item highlight">LOGIN / JOIN</a></div>
-<div class="frame">
-<div style="font-size:10px;opacity:0.5">P2K. 2026 / P2K pioneering the future</div>
-</div>
-<main class="container">
-<div class="label">P2K Who are they?</div>
-<h1 class="main-title"><span>PIONEER</span><span style="margin-left:20px">P2K. FUTURE</span></h1>
 
+<div class="top-nav">
+    <a href="login.html" class="nav-item highlight">LOGIN / JOIN</a>
+</div>
+
+<div class="frame">
+    <div style="font-size:10px;opacity:0.5">P2K. 2026 / P2K pioneering the future</div>
+</div>
+
+<main class="container">
+    <div class="label">P2K Who are they?</div>
+    <h1 class="main-title">
+        <span>PIONEER</span>
+        <span style="margin-left:20px">P2K. FUTURE</span>
+    </h1>
 </main>
+
 <script>
 const cursor=document.getElementById('cursor'),follower=document.getElementById('cursor-follower');
-document.addEventListener('mousemove',(e)=>{
-const x=e.clientX,y=e.clientY;
-cursor.style.transform=`translate3d(${x-10}px,${y-10}px,0)`;
-follower.style.transform=`translate3d(${x-30}px,${y-30}px,0)`;
-});
-document.querySelectorAll('.nav-item').forEach(link=>{
-link.addEventListener('mouseenter',()=>{follower.style.transform+=' scale(1.8)';follower.style.backgroundColor='rgba(0,255,163,0.2)'});
-link.addEventListener('mouseleave',()=>{follower.style.backgroundColor='transparent'});
-});
 const canvas=document.getElementById('bg-canvas'),ctx=canvas.getContext('2d');
 let width,height,mouseX=0,mouseY=0;
-function resize(){width=canvas.width=window.innerWidth;height=canvas.height=window.innerHeight}
+
+// 마우스 및 터치 위치 통합 관리
+function handleMove(e) {
+    let x, y;
+    if (e.type.startsWith('touch')) {
+        x = e.touches[0].clientX;
+        y = e.touches[0].clientY;
+    } else {
+        x = e.clientX;
+        y = e.clientY;
+    }
+    
+    mouseX = x;
+    mouseY = y;
+
+    // PC 커서 업데이트 (있을 때만)
+    if(cursor && follower) {
+        cursor.style.transform=`translate3d(${x-10}px,${y-10}px,0)`;
+        follower.style.transform=`translate3d(${x-30}px,${y-30}px,0)`;
+    }
+}
+
+document.addEventListener('mousemove', handleMove);
+document.addEventListener('touchmove', handleMove, {passive: false});
+document.addEventListener('touchstart', handleMove, {passive: false});
+
+// PC 호버 효과 유지
+document.querySelectorAll('.nav-item').forEach(link=>{
+    link.addEventListener('mouseenter',()=>{
+        if(follower.style.display !== 'none') {
+            follower.style.transform+=' scale(1.8)';
+            follower.style.backgroundColor='rgba(0,255,163,0.2)';
+        }
+    });
+    link.addEventListener('mouseleave',()=>{
+        follower.style.backgroundColor='transparent';
+    });
+});
+
+function resize(){
+    width=canvas.width=window.innerWidth;
+    height=canvas.height=window.innerHeight;
+    // 초기 광원 위치 중앙
+    mouseX = width/2;
+    mouseY = height/2;
+}
+
 window.addEventListener('resize',resize);
-window.addEventListener('mousemove',(e)=>{mouseX=e.clientX;mouseY=e.clientY});
 resize();
+
 function animate(){
-ctx.clearRect(0,0,width,height);
-const time=Date.now()*0.001,x=mouseX+Math.sin(time)*50,y=mouseY+Math.cos(time)*50;
-const g=ctx.createRadialGradient(x,y,0,x,y,width*0.8);
-g.addColorStop(0,'rgba(0, 255, 163, 0.4)'); /* 투명도 부여 */
-g.addColorStop(0.5,'rgba(78, 0, 255, 0.2)'); 
-g.addColorStop(1,'transparent');
-ctx.fillStyle=g;ctx.fillRect(0,0,width,height);
-requestAnimationFrame(animate);
+    ctx.clearRect(0,0,width,height);
+    const time=Date.now()*0.001;
+    // 부드러운 유동 효과
+    const x=mouseX+Math.sin(time)*50,y=mouseY+Math.cos(time)*50;
+    const g=ctx.createRadialGradient(x,y,0,x,y,width*0.8);
+    g.addColorStop(0,'rgba(0, 255, 163, 0.4)');
+    g.addColorStop(0.5,'rgba(78, 0, 255, 0.2)');
+    g.addColorStop(1,'transparent');
+    ctx.fillStyle=g;
+    ctx.fillRect(0,0,width,height);
+    requestAnimationFrame(animate);
 }
 animate();
 </script>
