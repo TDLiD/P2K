@@ -7,17 +7,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@900&family=Syncopate:wght@700&display=swap" rel="stylesheet">
 <style>
 :root{--accent:#00ffa3;--bg:#050507}
-/* PC에서만 커서 숨김 */
-@media (pointer: fine) {
-    *{margin:0;padding:0;box-sizing:border-box;cursor:none}
-}
-/* 모바일 기본 초기화 */
 *{margin:0;padding:0;box-sizing:border-box}
 
+/* PC에서는 기본 마우스 커서를 숨김 */
+@media (pointer: fine) {
+    body, a, button { cursor: none !important; }
+}
+
 body {
-    background: 
-        linear-gradient(rgba(5, 5, 7, 0.6), rgba(5, 5, 7, 0.6)), 
-        url('https://picsum.photos/1920/1080'); 
+    background: linear-gradient(rgba(5, 5, 7, 0.6), rgba(5, 5, 7, 0.6)), url('https://picsum.photos/1920/1080'); 
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -26,48 +24,49 @@ body {
     font-family: 'Inter', sans-serif;
     overflow: hidden;
     height: 100vh;
-    touch-action: none; /* 모바일 드래그 시 새로고침 방지 */
+    touch-action: none; /* 모바일 드래그/확대 방지 */
 }
 
 #canvas-wrapper{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;filter:blur(60px);opacity:0.4}
 
-/* 커서 스타일: 터치 기기에서는 미출력 */
-#cursor{position:fixed;width:20px;height:20px;background:var(--accent);border-radius:50%;pointer-events:none;z-index:9999;mix-blend-mode:difference;transition:transform 0.1s ease-out;display:none}
-#cursor-follower{position:fixed;width:60px;height:60px;border:1px solid var(--accent);border-radius:50%;pointer-events:none;z-index:9998;transition:all 0.3s ease-out;display:none}
-
-@media (pointer: fine) {
-    #cursor, #cursor-follower { display: block; }
+/* 커서 스타일: 기본적으로 투명도 0 */
+#cursor, #cursor-follower {
+    position:fixed;
+    pointer-events:none;
+    z-index:9999;
+    border-radius:50%;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
+
+#cursor{width:20px;height:20px;background:var(--accent);mix-blend-mode:difference;}
+#cursor-follower{width:60px;height:60px;border:1px solid var(--accent);transition: transform 0.1s ease-out, opacity 0.3s ease;}
+
+/* 활성화되었을 때만 보이게 함 (스크립트에서 제어) */
+.active-cursor { opacity: 1 !important; }
 
 .top-nav{position:fixed;top:40px;right:40px;z-index:1000}
 .container{height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:0 10%}
 .label{font-size:12px;letter-spacing:0.5rem;color:var(--accent);text-transform:uppercase;margin-bottom:20px;opacity:0;transform:translateY(20px);animation:fadeInUp 1s forwards 0.5s}
 
-/* 반응형 타이틀 폰트 크기 */
 .main-title{font-family:'Syncopate',sans-serif;font-size:clamp(2.5rem, 8vw, 8rem);line-height:0.9;text-transform:uppercase;margin-bottom:40px;opacity:0;transform:scale(0.9);animation:scaleIn 1.5s forwards}
 .main-title span{display:block;-webkit-text-stroke:1px white;color:transparent;transition:0.5s}
 
-/* PC 호버 효과 유지 */
 @media (hover: hover) {
     .main-title span:hover{color:white;-webkit-text-stroke:1px var(--accent)}
 }
 
 .nav-item{text-decoration:none;color:rgba(255,255,255,0.5);font-weight:bold;font-size:14px;letter-spacing:2px;transition:0.3s;position:relative;padding:5px 0}
 .nav-item.highlight{color:var(--accent);border:1px solid var(--accent);padding:10px 25px;border-radius:30px;font-size:12px}
-.nav-item::after{content:'';position:absolute;bottom:-5px;left:0;width:0;height:1px;background:var(--accent);transition:0.3s}
-.nav-item:hover{color:white}.nav-item:hover::after{width:100%}
-.nav-item.highlight:hover{background:rgba(0,255,163,0.1);border-color:white}
 
 @keyframes fadeInUp{to{opacity:1;transform:translateY(0)}}
 @keyframes scaleIn{to{opacity:1;transform:scale(1)}}
-@keyframes fadeIn{to{opacity:1}}
 
 .frame{position:fixed;padding:40px;width:100%;height:100%;display:flex;justify-content:space-between;align-items:flex-end;pointer-events:none;z-index:10}
 
-/* 모바일 레이아웃 최적화 */
 @media (max-width: 768px) {
     .top-nav { top: 20px; right: 20px; }
-    .main-title span { margin-left: 0 !important; } /* 모바일에서 정렬 깨짐 방지 */
+    .main-title span { margin-left: 0 !important; }
     .frame { padding: 20px; justify-content: center; }
 }
 </style>
@@ -97,59 +96,51 @@ const cursor=document.getElementById('cursor'),follower=document.getElementById(
 const canvas=document.getElementById('bg-canvas'),ctx=canvas.getContext('2d');
 let width,height,mouseX=0,mouseY=0;
 
-// 마우스 및 터치 위치 통합 관리
+// 위치 업데이트 및 가시성 제어
 function handleMove(e) {
     let x, y;
     if (e.type.startsWith('touch')) {
         x = e.touches[0].clientX;
         y = e.touches[0].clientY;
+        // 터치 시 커서 보이기
+        cursor.classList.add('active-cursor');
+        follower.classList.add('active-cursor');
     } else {
         x = e.clientX;
         y = e.clientY;
+        // 마우스 이동 시 커서 보이기 (PC)
+        cursor.classList.add('active-cursor');
+        follower.classList.add('active-cursor');
     }
     
     mouseX = x;
     mouseY = y;
 
-    // PC 커서 업데이트 (있을 때만)
-    if(cursor && follower) {
-        cursor.style.transform=`translate3d(${x-10}px,${y-10}px,0)`;
-        follower.style.transform=`translate3d(${x-30}px,${y-30}px,0)`;
-    }
+    cursor.style.transform=`translate3d(${x-10}px,${y-10}px,0)`;
+    follower.style.transform=`translate3d(${x-30}px,${y-30}px,0)`;
+}
+
+// 터치 종료 시 커서 숨기기 (선택 사항)
+function handleEnd() {
+    cursor.classList.remove('active-cursor');
+    follower.classList.remove('active-cursor');
 }
 
 document.addEventListener('mousemove', handleMove);
 document.addEventListener('touchmove', handleMove, {passive: false});
 document.addEventListener('touchstart', handleMove, {passive: false});
-
-// PC 호버 효과 유지
-document.querySelectorAll('.nav-item').forEach(link=>{
-    link.addEventListener('mouseenter',()=>{
-        if(follower.style.display !== 'none') {
-            follower.style.transform+=' scale(1.8)';
-            follower.style.backgroundColor='rgba(0,255,163,0.2)';
-        }
-    });
-    link.addEventListener('mouseleave',()=>{
-        follower.style.backgroundColor='transparent';
-    });
-});
+document.addEventListener('touchend', handleEnd);
 
 function resize(){
     width=canvas.width=window.innerWidth;
     height=canvas.height=window.innerHeight;
-    // 초기 광원 위치 중앙
-    mouseX = width/2;
-    mouseY = height/2;
 }
-
 window.addEventListener('resize',resize);
 resize();
 
 function animate(){
     ctx.clearRect(0,0,width,height);
     const time=Date.now()*0.001;
-    // 부드러운 유동 효과
     const x=mouseX+Math.sin(time)*50,y=mouseY+Math.cos(time)*50;
     const g=ctx.createRadialGradient(x,y,0,x,y,width*0.8);
     g.addColorStop(0,'rgba(0, 255, 163, 0.4)');
