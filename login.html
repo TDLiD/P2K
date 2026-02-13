@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>P2K | AUTH</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Syncopate:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{--accent:#00ffa3;--bg:#050507}
+
+/* 🖼️ 배경 이미지 설정 추가 */
+body {
+    background: 
+        linear-gradient(rgba(5, 5, 7, 0.7), rgba(5, 5, 7, 0.7)), 
+        url('https://picsum.photos/1920/1080'); 
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    color:white;
+    font-family:'Inter',sans-serif;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+    margin:0;
+    overflow:hidden;
+}
+
+.auth-card{
+    background:rgba(15, 23, 42, 0.6);
+    padding:40px;
+    border:1px solid rgba(0,255,163,0.2);
+    border-radius:20px;
+    width:420px;
+    backdrop-filter:blur(20px);
+    z-index:10;
+    text-align:center;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+h2{font-family:'Syncopate',sans-serif;color:var(--accent);margin-bottom:25px;font-size:1.5rem}
+.input-row{display:flex;gap:8px;margin-bottom:12px}.input-row input{flex:1}
+.check-btn{width:80px!important;padding:10px!important;font-size:11px!important;margin-top:0!important;clip-path:none!important;border-radius:5px!important;background:rgba(255,255,255,0.1)!important;color:var(--accent)!important;border:1px solid var(--accent)!important}
+.input-group{margin-bottom:12px}input{width:100%;padding:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:white;border-radius:5px;outline:none}
+input:focus{border-color:var(--accent)}button{width:100%;padding:12px;background:var(--accent);border:none;font-weight:bold;cursor:pointer;margin-top:10px;clip-path:polygon(0 0,90% 0,100% 30%,100% 100%,10% 100%,0 70%);transition:0.3s}
+button:disabled{background:#555;cursor:not-allowed}.msg{font-size:11px;margin-top:4px;text-align:left;height:14px}
+.toggle-links{margin-top:20px;font-size:12px;display:flex;justify-content:space-between;color:rgba(255,255,255,0.5)}.toggle-links span{cursor:pointer;text-decoration:underline}.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="auth-card">
+    <div id="login-form">
+        <h2>LOGIN</h2>
+        <div class="input-group">
+            <input type="text" id="login-id" placeholder="USER ID" onkeydown="if(event.keyCode==13) handleLogin()">
+        </div>
+        <div class="input-group">
+            <input type="password" id="login-pw" placeholder="PASSWORD" onkeydown="if(event.keyCode==13) handleLogin()">
+        </div>
+        <button onclick="handleLogin()">ENTER</button>
+        <div class="toggle-links">
+            <span onclick="showForm('signup')">JOIN</span>
+            <span onclick="showForm('find-id')">ID</span>
+            <span onclick="showForm('find-pw')">PW</span>
+        </div>
+    </div>
+
+    <div id="signup-form" class="hidden">
+        <h2>JOIN</h2>
+        <div class="input-row"><input type="text" id="reg-id" placeholder="ID"><button class="check-btn" onclick="checkDup('id')">CHECK</button></div>
+        <div class="input-row"><input type="email" id="reg-email" placeholder="EMAIL"><button class="check-btn" onclick="checkDup('email')">CHECK</button></div>
+        <div class="input-group"><input type="password" id="reg-pw" placeholder="PW (6+ English/Num/Spec)"></div>
+        <div class="input-group"><input type="password" id="reg-pw-confirm" placeholder="CONFIRM PW" oninput="validatePw()"><div id="pw-msg" class="msg"></div></div>
+        <button id="signup-btn" onclick="handleSignUp()">REGISTER</button>
+        <div class="toggle-links"><span onclick="showForm('login')">BACK</span></div>
+    </div>
+
+    <div id="find-form" class="hidden">
+        <h2 id="find-title">FIND</h2>
+        <div class="input-group"><input type="text" id="find-input"></div>
+        <button onclick="handleFind()">GET INFO</button>
+        <div class="toggle-links"><span onclick="showForm('login')">BACK</span></div>
+    </div>
+</div>
+
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import{getDatabase,ref,set,get}from"https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const cfg={databaseURL:"https://jakor-52390-default-rtdb.firebaseio.com"};
+const app=initializeApp(cfg),db=getDatabase(app);
+let idOk=false,emailOk=false;
+
+window.showForm=(m)=>{
+    document.getElementById('login-form').className=m==='login'?'':'hidden';
+    document.getElementById('signup-form').className=m==='signup'?'':'hidden';
+    document.getElementById('find-form').className=(m.startsWith('find'))?'':'hidden';
+    if(m.startsWith('find')){
+        document.getElementById('find-title').innerText=m==='find-id'?'FIND ID':'FIND PW';
+        document.getElementById('find-input').placeholder=m==='find-id'?'EMAIL':'ID'
+    }
+}
+
+window.checkDup=async(type)=>{
+    const val=document.getElementById(type==='id'?'reg-id':'reg-email').value;
+    if(!val)return alert("Input value.");
+    const s=await get(ref(db,'users'));
+    const u=s.val();
+    if(type==='id'){
+        const exists=u&&u[val];
+        alert(exists?"Already joined ID.":"Available ID.");
+        idOk=!exists;
+    }else{
+        let exists=false;
+        for(let k in u)if(u[k].email===val)exists=true;
+        alert(exists?"Already joined Email.":"Available Email.");
+        emailOk=!exists;
+    }
+}
+
+window.validatePw=()=>{
+    const p1=document.getElementById('reg-pw').value,p2=document.getElementById('reg-pw-confirm').value,m=document.getElementById('pw-msg');
+    if(!p2){m.innerText='';return;}
+    const isSame=p1===p2;
+    m.innerText=isSame?"✔ Passwords match":"✘ Not match";
+    m.style.color=isSame?"#00ffa3":"#ff4e4e";
+}
+
+window.handleSignUp=async()=>{
+    const id=document.getElementById('reg-id').value,em=document.getElementById('reg-email').value,pw=document.getElementById('reg-pw').value,pwc=document.getElementById('reg-pw-confirm').value;
+    if(!idOk||!emailOk)return alert("Please check ID/Email duplication.");
+    const pwRegex=/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{6,}$/;
+    if(!pwRegex.test(pw))return alert("6+ chars, English+Num+Special required.");
+    if(pw!==pwc)return alert("Passwords do not match.");
+    await set(ref(db,'users/'+id),{id,email:em,pw});
+    alert("Welcome to P2K.");
+    showForm('login')
+}
+
+// 🔐 로그인 처리 및 페이지 이동 수정
+window.handleLogin=async()=>{
+    const id=document.getElementById('login-id').value;
+    const pw=document.getElementById('login-pw').value;
+    
+    if(!id || !pw) return alert("Please enter ID and Password.");
+
+    const s=await get(ref(db,'users/'+id));
+    
+    if(s.exists() && s.val().pw === pw){
+        alert("Access Granted.");
+        localStorage.setItem('p2k_user', id); // 사용자 세션 저장
+        location.href='main.html'; // 🚀 로그인 성공 시 main.html로 이동
+    } else {
+        alert("Invalid ID or PW.");
+    }
+}
+
+window.handleFind=async()=>{const i=document.getElementById('find-input').value,s=await get(ref(db,'users')),u=s.val();if(!u)return;const cur=document.getElementById('find-title').innerText;if(cur==='FIND ID'){let f=null;for(let k in u)if(u[k].email===i)f=k;alert(f?`ID: ${f}`:"None.");}else{if(u[i])alert(`Hint: ${u[i].pw.substring(0,2)}**`);else alert("None.")}}
+</script>
+</body>
+</html>
