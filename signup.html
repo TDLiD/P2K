@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up | Jakarta Connect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700&family=Space+Mono&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg: #020407; --surface: #0d1a24;
+            --chrome: #c8d8e8; --gold: #d4a843;
+            --cyan: #00d4ff; --border: rgba(200,216,232,0.1);
+            --text: #cdd8e3;
+        }
+        body {
+            background: var(--bg); color: var(--text);
+            font-family: 'Syne', sans-serif;
+            display: flex; align-items: center; justify-content: center;
+            min-height: 100vh; margin: 0; overflow-x: hidden;
+        }
+        .grid-bg { position: fixed; inset: 0; background-image: linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px); background-size: 40px 40px; z-index: -1; }
+
+        .signup-box {
+            background: var(--surface); border: 1px solid var(--border);
+            padding: 40px; border-radius: 8px; width: 100%; max-width: 440px;
+            position: relative; z-index: 1; box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+            margin: 20px;
+        }
+        
+        h2 { font-weight: 800; color: var(--chrome); margin-bottom: 25px; letter-spacing: 0.1em; text-align: center; }
+        .input-group { margin-bottom: 22px; position: relative; }
+        label { display: block; font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--cyan); margin-bottom: 8px; text-transform: uppercase; }
+        
+        .input-flex { display: flex; gap: 8px; }
+        .input-flex input { flex: 1; }
+        
+        .btn-check {
+            background: rgba(0, 212, 255, 0.1); border: 1px solid var(--cyan); color: var(--cyan);
+            padding: 0 15px; border-radius: 4px; font-family: 'Space Mono', monospace;
+            font-size: 0.7rem; cursor: pointer; transition: 0.3s; white-space: nowrap;
+        }
+        .btn-check:hover { background: var(--cyan); color: var(--bg); }
+
+        .pw-wrapper { position: relative; width: 100%; }
+        input {
+            width: 100%; background: #060c12; border: 1px solid var(--border);
+            padding: 14px; color: white; border-radius: 4px; outline: none; transition: 0.3s; font-family: sans-serif;
+            box-sizing: border-box;
+        }
+        input:focus { border-color: var(--cyan); }
+        
+        .toggle-password {
+            position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+            cursor: pointer; opacity: 0.6; transition: 0.3s; display: flex; align-items: center; z-index: 5;
+        }
+        .toggle-password:hover { opacity: 1; color: var(--cyan); }
+
+        .input-group .tooltip {
+            visibility: hidden; width: 100%; background-color: #1a2c38; color: var(--cyan);
+            text-align: left; border: 1px solid var(--cyan); padding: 8px 12px; border-radius: 4px;
+            position: absolute; z-index: 10; bottom: 105%; left: 0;
+            font-size: 0.7rem; font-family: 'Space Mono', monospace;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5); opacity: 0; transition: opacity 0.3s;
+            pointer-events: none; line-height: 1.4;
+        }
+        .input-group:hover .tooltip { visibility: visible; opacity: 1; }
+
+        .field-msg { font-size: 0.65rem; margin-top: 5px; height: 1em; }
+        
+        /* 메인 신청 버튼 */
+        .btn-join {
+            width: 100%; background: transparent; border: 1px solid var(--gold); color: var(--gold); 
+            padding: 15px; font-family: 'Space Mono', monospace; font-weight: bold; cursor: pointer;
+            margin-top: 15px; transition: 0.3s; letter-spacing: 0.1em;
+        }
+        .btn-join:hover { background: var(--gold); color: black; }
+
+        /* 추가된 게스트 버튼 스타일 */
+        .btn-guest {
+            width: 100%; background: transparent; border: 1px solid rgba(200,216,232,0.3); 
+            padding: 12px; color: var(--chrome); font-family: 'Space Mono', monospace; 
+            font-size: 0.8rem; cursor: pointer; margin-top: 10px; transition: 0.3s;
+            letter-spacing: 0.05em;
+        }
+        .btn-guest:hover { 
+            background: rgba(200,216,232,0.05); 
+            border-color: var(--cyan);
+            color: var(--cyan);
+        }
+        
+        .footer-links { margin-top: 25px; text-align: center; font-size: 0.8rem; color: #637480; }
+        .footer-links a { color: var(--text); text-decoration: none; border-bottom: 1px solid #333; }
+        .msg { font-size: 0.75rem; margin-top: 15px; text-align: center; min-height: 1.2em; line-height: 1.5; }
+        .error { color: #ff2d6e; }
+        .success { color: var(--cyan); }
+    </style>
+</head>
+<body>
+
+    <div class="grid-bg"></div>
+
+    <div class="signup-box">
+        <h2>NEW_GUEST_JOIN</h2>
+        <form id="signup-form">
+
+<div style="display:none;">
+    <label>Do not fill this field</label>
+    <input type="text" id="honeypot-field" name="honeypot-field">
+</div>
+
+
+            <div class="input-group">
+                <label>Identity_ID</label>
+                <div class="tooltip">ID_RULE: Only lowercase letters and numbers are allowed.</div>
+                <div class="input-flex">
+                    <input type="text" id="user-id" placeholder="Lowercase + Numbers" required>
+                    <button type="button" class="btn-check" onclick="checkDuplicate('id')">Check</button>
+                </div>
+                <div id="id-msg" class="field-msg"></div>
+            </div>
+
+            <div class="input-group">
+                <label>Email_Address</label>
+                <div class="tooltip">EMAIL_RULE: Enter a valid email format (ex: user@mail.com).</div>
+                <div class="input-flex">
+                    <input type="email" id="user-email" placeholder="example@mail.com" required>
+                    <button type="button" class="btn-check" onclick="checkDuplicate('email')">Check</button>
+                </div>
+                <div id="email-msg" class="field-msg"></div>
+            </div>
+
+            <div class="input-group">
+                <label>Password</label>
+                <div class="tooltip">KEY_RULE: Must be 9-12 characters long, including uppercase, lowercase, numbers, and special characters.</div>
+                <div class="pw-wrapper">
+                    <input type="password" id="user-pw" placeholder="Case+Num+Special (9-12 chars)" required>
+                    <span class="toggle-password" onclick="togglePassword('user-pw', this)">
+                        <i data-lucide="eye"></i>
+                    </span>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Confirm_Password</label>
+                <div class="pw-wrapper">
+                    <input type="password" id="user-pw-confirm" placeholder="Re-enter your password" required>
+                    <span class="toggle-password" onclick="togglePassword('user-pw-confirm', this)">
+                        <i data-lucide="eye"></i>
+                    </span>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-join">COMPLETE APPLICATION</button>
+            
+            <button type="button" class="btn-guest" onclick="location.href='index.html'">
+                > CONTINUE_AS_GUEST
+            </button>
+        </form>
+        <div id="msg-box" class="msg"></div>
+        <div class="footer-links">
+            Already have an account? <a href="login.html">Login here</a>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set, get, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            databaseURL: "https://jakor-52390-default-rtdb.firebaseio.com/"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        lucide.createIcons();
+
+        let isIdChecked = false;
+        let isEmailChecked = false;
+
+        // Toggle Password Visibility
+        window.togglePassword = function(inputId, el) {
+            const input = document.getElementById(inputId);
+            const icon = el.querySelector('i') || el.querySelector('svg');
+            if (!input || !icon) return;
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.setAttribute('data-lucide', 'eye-off');
+            } else {
+                input.type = 'password';
+                icon.setAttribute('data-lucide', 'eye');
+            }
+            lucide.createIcons();
+        };
+
+        // Duplicate Check and Validation
+        window.checkDuplicate = async (type) => {
+            const idVal = document.getElementById('user-id').value.trim();
+            const emailVal = document.getElementById('user-email').value.trim();
+            const idMsg = document.getElementById('id-msg');
+            const emailMsg = document.getElementById('email-msg');
+
+            if (type === 'id') {
+                const idRegex = /^[a-z0-9]+$/;
+                if (!idVal) { idMsg.innerText = "Please enter an ID."; idMsg.className="field-msg error"; return; }
+                if (!idRegex.test(idVal)) { idMsg.innerText = "Only lowercase letters and numbers are allowed."; idMsg.className="field-msg error"; return; }
+                
+                try {
+                    const snapshot = await get(ref(db, 'users/' + idVal));
+                    if (snapshot.exists()) {
+                        idMsg.innerText = "This ID is already in use.";
+                        idMsg.className = "field-msg error";
+                        isIdChecked = false;
+                    } else {
+                        idMsg.innerText = "This ID is available.";
+                        idMsg.className = "field-msg success";
+                        isIdChecked = true;
+                    }
+                } catch(e) { console.error(e); }
+            }
+
+            if (type === 'email') {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailVal) { emailMsg.innerText = "Please enter an email."; emailMsg.className="field-msg error"; return; }
+                if (!emailRegex.test(emailVal)) { emailMsg.innerText = "Invalid email format."; emailMsg.className="field-msg error"; return; }
+                
+                try {
+                    const emailQuery = query(ref(db, 'users'), orderByChild('email'), equalTo(emailVal));
+                    const snapshot = await get(emailQuery);
+                    if (snapshot.exists()) {
+                        emailMsg.innerText = "This email is already registered.";
+                        emailMsg.className = "field-msg error";
+                        isEmailChecked = false;
+                    } else {
+                        emailMsg.innerText = "This email is available.";
+                        emailMsg.className = "field-msg success";
+                        isEmailChecked = true;
+                    }
+                } catch(e) { console.error(e); }
+            }
+        };
+
+        document.getElementById('user-id').addEventListener('input', () => { isIdChecked = false; document.getElementById('id-msg').innerText = ""; });
+        document.getElementById('user-email').addEventListener('input', () => { isEmailChecked = false; document.getElementById('email-msg').innerText = ""; });
+
+        const form = document.getElementById('signup-form');
+        const msgBox = document.getElementById('msg-box');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+
+// 1. 허니팟 검사
+    const honey = document.getElementById('honeypot-field').value;
+    if (honey) {
+        console.warn("BOT DETECTED.");
+        return; // 가입 진행 안 함
+    }
+
+
+            const id = document.getElementById('user-id').value;
+            const email = document.getElementById('user-email').value;
+            const pw = document.getElementById('user-pw').value;
+            const pwConfirm = document.getElementById('user-pw-confirm').value;
+
+            if (!isIdChecked || !isEmailChecked) {
+                msgBox.innerText = "Please complete the ID and Email duplicate checks first.";
+                msgBox.className = "msg error";
+                return;
+            }
+
+            const pwRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{9,12}$/;
+            if (!pwRegex.test(pw)) {
+                msgBox.innerText = "Password Rule Violation: 9-12 chars with upper/lower/num/special.";
+                msgBox.className = "msg error";
+                return;
+            }
+
+            if (pw !== pwConfirm) {
+                msgBox.innerText = "Passwords do not match.";
+                msgBox.className = "msg error";
+                return;
+            }
+
+            try {
+                await set(ref(db, 'users/' + id), { id, email, pw });
+                msgBox.innerText = "WELCOME NEW CITIZEN. Registration complete.";
+                msgBox.className = "msg success";
+                setTimeout(() => { location.href = 'login.html'; }, 2000);
+            } catch (err) {
+                msgBox.innerText = "SYSTEM ERROR: " + err.message;
+                msgBox.className = "msg error";
+            }
+        });
+    </script>
+</body>
+</html>

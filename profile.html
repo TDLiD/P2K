@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile | Jakarta Connect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700&family=Space+Mono&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg: #020407; --surface: #0d1a24;
+            --chrome: #c8d8e8; --gold: #d4a843;
+            --cyan: #00d4ff; --border: rgba(200,216,232,0.1);
+            --text: #cdd8e3; --danger: #ff2d6e;
+        }
+        body {
+            background: var(--bg); color: var(--text);
+            font-family: 'Syne', sans-serif;
+            display: flex; align-items: center; justify-content: center;
+            min-height: 100vh; margin: 0; padding: 20px;
+        }
+        .profile-box {
+            background: var(--surface); border: 1px solid var(--border);
+            padding: 40px; border-radius: 8px; width: 100%; max-width: 450px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        h2 { color: var(--chrome); letter-spacing: 0.1em; text-align: center; margin-bottom: 30px; }
+        
+        /* --- 아바타 섹션 수정 --- */
+        .avatar-section { text-align: center; margin-bottom: 30px; }
+        #current-avatar-img { 
+            width: 80px; height: 80px; 
+            object-fit: cover; border-radius: 50%; 
+            margin: 0 auto 15px; display: block;
+            border: 2px solid var(--cyan); background: #000;
+        }
+        .avatar-grid { 
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; 
+            background: rgba(0,0,0,0.3); padding: 15px; border-radius: 4px;
+            max-height: 200px; overflow-y: auto; /* 리스트가 많으므로 스크롤 추가 */
+            border: 1px solid var(--border);
+        }
+        .avatar-item { 
+            cursor: pointer; width: 100%; aspect-ratio: 1;
+            border-radius: 4px; border: 2px solid transparent;
+            overflow: hidden; transition: 0.2s; background: #111;
+        }
+        .avatar-item img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+        .avatar-item:hover { transform: scale(1.1); border-color: var(--gold); }
+        .avatar-item.selected { border-color: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
+
+        /* 입력창 스타일 유지 */
+        .input-group { margin-bottom: 20px; position: relative; }
+        label { display: block; font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--cyan); margin-bottom: 8px; }
+        .pw-wrapper { position: relative; }
+        input {
+            width: 100%; background: #060c12; border: 1px solid var(--border);
+            padding: 12px; padding-right: 40px; color: white; border-radius: 4px; outline: none; box-sizing: border-box;
+            transition: 0.3s; font-family: 'Space Mono', monospace;
+        }
+        input:focus { border-color: var(--cyan); }
+        input:read-only { opacity: 0.5; cursor: not-allowed; }
+        .toggle-password { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; opacity: 0.6; }
+
+        .btn-update {
+            width: 100%; background: var(--gold); border: none; padding: 15px;
+            font-family: 'Space Mono', monospace; font-weight: bold; cursor: pointer; margin-top: 10px;
+        }
+        .btn-delete {
+            width: 100%; background: transparent; border: 1px solid var(--danger); 
+            color: var(--danger); padding: 12px; font-family: 'Space Mono', monospace; 
+            font-size: 0.75rem; cursor: pointer; margin-top: 20px;
+        }
+        .msg { font-size: 0.8rem; margin-top: 15px; text-align: center; min-height: 20px; }
+        .error { color: var(--danger); }
+        .success { color: var(--cyan); }
+        .back-link { display: block; text-align: center; margin-top: 20px; font-size: 0.8rem; color: var(--text); text-decoration: none; opacity: 0.6; }
+
+        #modal-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+            z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(5px);
+        }
+        .modal-content { background: #120505; border: 1px solid var(--danger); padding: 30px; max-width: 320px; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div class="profile-box">
+        <h2>EDIT_CITIZEN_DATA</h2>
+
+        <div class="avatar-section">
+            <label>CITIZEN_AVATAR_MODULE</label>
+            <img id="current-avatar-img" src="../images/profiles/image-001.gif" alt="Current Avatar">
+            <div class="avatar-grid" id="avatar-picker">
+                </div>
+        </div>
+
+        <form id="profile-form">
+            <div class="input-group">
+                <label>IDENTITY_ID (READ_ONLY)</label>
+                <input type="text" id="user-id" readonly>
+            </div>
+            <div class="input-group">
+                <label>NEW_EMAIL_ADDRESS</label>
+                <input type="email" id="user-email" required>
+            </div>
+            
+            <div class="input-group">
+                <label>NEW_PASSWORD</label>
+                <div class="pw-wrapper">
+                    <input type="password" id="user-pw" required>
+                    <span class="toggle-password" onclick="toggleVisibility('user-pw')">
+                        <i data-lucide="eye"></i>
+                    </span>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>CONFIRM_NEW_PASSWORD</label>
+                <div class="pw-wrapper">
+                    <input type="password" id="user-pw-confirm" required>
+                    <span class="toggle-password" onclick="toggleVisibility('user-pw-confirm')">
+                        <i data-lucide="eye"></i>
+                    </span>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-update">SYNCHRONIZE DATA (UPDATE)</button>
+        </form>
+
+        <button type="button" id="open-delete-modal" class="btn-delete">TERMINATE_ACCOUNT (DELETE)</button>
+
+        <div id="msg-box" class="msg"></div>
+        <a href="index.html" class="back-link"><< RETURN_TO_HUB</a>
+    </div>
+
+    <div id="modal-overlay">
+        <div class="modal-content">
+            <p class="error">WARNING:<br>This action will permanently erase your citizen profile.</p>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button style="flex:1; padding:10px;" onclick="closeModal()">CANCEL</button>
+                <button id="confirm-delete" style="flex:1; padding:10px; background:var(--danger); border:none; color:white;">CONFIRM</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, get, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = { databaseURL: "https://jakor-52390-default-rtdb.firebaseio.com/" };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        lucide.createIcons();
+
+        const userId = sessionStorage.getItem('userId');
+        const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+        let selectedAvatarPath = "../images/profiles/image-001.gif"; // 기본값
+
+        if (!isLoggedIn || !userId) {
+            alert("Access denied. Please login first.");
+            location.href = "login.html";
+        }
+
+        // --- 아바타 그리드 생성 및 로직 ---
+        const avatarPicker = document.getElementById('avatar-picker');
+        const currentAvatarImg = document.getElementById('current-avatar-img');
+
+        // 1. 이미지 아이템 생성 (001 ~ 029)
+        for (let i = 1; i <= 29; i++) {
+            const fileName = `image-${String(i).padStart(3, '0')}.gif`;
+            const filePath = `../images/profiles/${fileName}`;
+            
+            const item = document.createElement('div');
+            item.className = 'avatar-item';
+            item.setAttribute('data-path', filePath);
+            item.innerHTML = `<img src="${filePath}" alt="Avatar ${i}">`;
+            
+            item.onclick = () => {
+                document.querySelectorAll('.avatar-item').forEach(el => el.classList.remove('selected'));
+                item.classList.add('selected');
+                selectedAvatarPath = filePath;
+                currentAvatarImg.src = filePath;
+            };
+            
+            avatarPicker.appendChild(item);
+        }
+
+        // --- 비밀번호 토글 ---
+        window.toggleVisibility = (id) => {
+            const input = document.getElementById(id);
+            const iconWrap = input.parentElement.querySelector('i, svg'); 
+            if (input.type === 'password') {
+                input.type = 'text';
+                iconWrap.setAttribute('data-lucide', 'eye-off');
+            } else {
+                input.type = 'password';
+                iconWrap.setAttribute('data-lucide', 'eye');
+            }
+            lucide.createIcons();
+        };
+
+        const idInput = document.getElementById('user-id');
+        const emailInput = document.getElementById('user-email');
+        const pwInput = document.getElementById('user-pw');
+        const pwConfirmInput = document.getElementById('user-pw-confirm');
+        const msgBox = document.getElementById('msg-box');
+
+        // 데이터 로드
+        async function loadUserData() {
+            try {
+                const snapshot = await get(ref(db, 'users/' + userId));
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    idInput.value = data.id;
+                    emailInput.value = data.email;
+                    pwInput.value = data.pw; 
+                    pwConfirmInput.value = data.pw;
+                    
+                    // 저장된 이미지 경로 로드
+                    if(data.avatar) {
+                        selectedAvatarPath = data.avatar;
+                        currentAvatarImg.src = selectedAvatarPath;
+                        
+                        // 그리드에서 해당 이미지 찾아서 선택 표시
+                        const items = document.querySelectorAll('.avatar-item');
+                        items.forEach(item => {
+                            if(item.getAttribute('data-path') === selectedAvatarPath) item.classList.add('selected');
+                        });
+                    }
+                }
+            } catch (error) { console.error(error); }
+        }
+        loadUserData();
+
+        // 업데이트 실행
+        document.getElementById('profile-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (pwInput.value !== pwConfirmInput.value) {
+                msgBox.innerText = "ERROR: Passwords do not match.";
+                msgBox.className = "msg error";
+                return;
+            }
+
+            msgBox.innerText = "Synchronizing with Database...";
+            msgBox.className = "msg";
+            
+            try {
+                await update(ref(db, 'users/' + userId), {
+                    email: emailInput.value,
+                    pw: pwInput.value,
+                    avatar: selectedAvatarPath // 이미지 경로 저장
+                });
+                msgBox.innerText = "SUCCESS: Profile updated.";
+                msgBox.className = "msg success";
+            } catch (error) {
+                msgBox.innerText = "ERROR: " + error.message;
+                msgBox.className = "msg error";
+            }
+        });
+
+        // 계정 삭제 모달 로직 (기존 유지)
+        window.closeModal = () => { document.getElementById('modal-overlay').style.display = 'none'; };
+        document.getElementById('open-delete-modal').onclick = () => { document.getElementById('modal-overlay').style.display = 'flex'; };
+        document.getElementById('confirm-delete').onclick = async () => {
+            await remove(ref(db, 'users/' + userId));
+            sessionStorage.clear();
+            location.href = "login.html";
+        };
+    </script>
+</body>
+</html>

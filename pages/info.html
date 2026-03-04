@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Board | Jakarta Connect</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="../css/style.css">
+
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: var(--bg);
+            overflow: hidden;
+        }
+
+        .construction-container {
+            text-align: center;
+            padding: 40px;
+            border: 1px solid var(--border);
+            background: rgba(13, 26, 36, 0.5);
+            backdrop-filter: blur(10px);
+            max-width: 600px;
+            position: relative;
+        }
+
+        .construction-container::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+            animation: scanline 2s linear infinite;
+        }
+
+        .warning-icon {
+            font-size: 3rem;
+            color: var(--gold);
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        h1 {
+            font-family: var(--font-ui);
+            font-size: 2.5rem;
+            color: var(--cyan);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        p {
+            font-family: var(--font-mono);
+            color: var(--text-soft);
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            margin-bottom: 20px;
+        }
+
+        .loading-bar {
+            width: 100%;
+            height: 4px;
+            background: var(--bg-2);
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .loading-progress {
+            position: absolute;
+            height: 100%;
+            width: 40%;
+            background: var(--cyan);
+            animation: progressMove 2s infinite ease-in-out;
+        }
+
+        .back-home {
+            text-decoration: none;
+            color: var(--bg);
+            background: var(--cyan);
+            padding: 12px 25px;
+            font-family: var(--font-mono);
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .back-home:hover {
+            background: var(--gold);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(212, 168, 67, 0.3);
+        }
+
+        @keyframes progressMove {
+            0% { left: -40%; }
+            100% { left: 100%; }
+        }
+
+        @keyframes scanline {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="orb orb-1"></div>
+
+    <div class="construction-container">
+        <span class="warning-icon">⚠️</span>
+        <div class="status-badge">SYSTEM_STATUS: UNDER_CONSTRUCTION</div>
+        <h1>Section Offline</h1>
+        <p>
+            // ACCESSING: Local_infomation.sh... <br>
+            // ERROR: Database link not established. <br>
+            //MESSAGE: The Jakarta Connect community bulletin board is currently undergoing an upgrade. <br>
+Please wait while we optimize the system for better connection service..
+        </p>
+
+        <div class="loading-bar">
+            <div class="loading-progress"></div>
+        </div>
+
+        <a href="../index.html" class="back-home">> RETURN_TO_LOBBY</a>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Terminal | Jakarta Connect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700&family=Space+Mono&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+<link rel="stylesheet" href="./css/style.css">
+    <style>
+        :root {
+            --bg: #010204; --surface: #0a1118;
+            --chrome: #c8d8e8; --gold: #d4a843;
+            --cyan: #00d4ff; --border: rgba(0,212,255,0.1);
+            --text: #cdd8e3; --danger: #ff4d4d;
+        }
+        body {
+            background: var(--bg); color: var(--text);
+            font-family: 'Space Mono', monospace; margin: 0;
+            display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+        }
+        
+        /* 헤더 및 참여자 리스트 */
+        header {
+            padding: 15px 20px; border-bottom: 1px solid var(--border);
+            background: var(--surface); display: flex; flex-direction: column; gap: 10px;
+        }
+        .header-top { display: flex; justify-content: space-between; align-items: center; }
+        .room-info h1 { font-family: 'Syne', sans-serif; font-size: 1.1rem; margin: 0; color: var(--cyan); }
+        .participant-bar {
+            font-size: 0.7rem; color: var(--chrome); opacity: 0.8;
+            display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+        }
+        .user-tag { background: rgba(0,212,255,0.1); padding: 2px 6px; border-radius: 3px; border: 1px solid var(--border); }
+
+        /* 채팅 영역 */
+        #chat-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .msg-bubble { max-width: 80%; padding: 10px 15px; border-radius: 4px; position: relative; }
+        .msg-remote { background: rgba(200,216,232,0.05); align-self: flex-start; border-left: 2px solid var(--cyan); }
+        .msg-me { background: rgba(212,168,67,0.1); align-self: flex-end; border-right: 2px solid var(--gold); }
+        
+        .msg-header { display: flex; justify-content: space-between; font-size: 0.6rem; color: var(--gold); margin-bottom: 5px; gap: 20px;}
+        .msg-text { font-size: 0.9rem; word-break: break-all; white-space: pre-wrap; }
+        
+        /* 수정/삭제 버튼 */
+        .msg-actions { display: flex; gap: 8px; cursor: pointer; }
+        .msg-actions span:hover { color: white; text-decoration: underline; }
+
+        /* 입력창 및 이모티콘 */
+        .controls { background: var(--surface); border-top: 1px solid var(--border); padding: 15px; }
+        .emoji-row { display: flex; gap: 10px; margin-bottom: 10px; overflow-x: auto; padding-bottom: 5px; }
+        .emoji-btn { cursor: pointer; font-size: 1.2rem; transition: transform 0.2s; }
+        .emoji-btn:hover { transform: scale(1.3); }
+        
+        .input-area { display: flex; gap: 10px; }
+        input {
+            flex: 1; background: #050a0f; border: 1px solid var(--border);
+            padding: 12px; color: white; outline: none; border-radius: 4px; font-family: inherit;
+        }
+        .send-btn { background: var(--cyan); border: none; padding: 0 20px; font-weight: bold; cursor: pointer; border-radius: 4px; }
+        .back-btn { color: var(--text); text-decoration: none; font-size: 0.7rem; opacity: 0.6; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-top">
+        <div class="room-info">
+            <a href="index.html" class="back-btn">< EXIT_HUB</a>
+            <h1 id="room-title">CHNL//LOADING</h1>
+        </div>
+        <div id="user-display" style="font-size: 0.7rem; color: var(--gold);">IDENTIFYING...</div>
+    </div>
+    <div class="participant-bar" id="participant-list">
+        <span>ACTIVE_CITIZENS:</span>
+        </div>
+</header>
+
+<div id="chat-messages"></div>
+
+<div class="controls">
+    <div id="reply-box" class="reply-preview">
+        <span id="reply-text"></span>
+        <span class="close-reply" onclick="cancelReply()">[X]</span>
+    </div>
+    <div class="emoji-row">
+        <span class="emoji-btn">😎</span><span class="emoji-btn">🔥</span><span class="emoji-btn">✨</span>
+        <span class="emoji-btn">🙌</span><span class="emoji-btn">👍</span><span class="emoji-btn">💻</span>
+        <span class="emoji-btn">🚨</span><span class="emoji-btn">💬</span><span class="emoji-btn">📍</span>
+        <span class="emoji-btn">🇮🇩</span>
+    </div>
+    <form class="input-area" id="chat-form">
+        <input type="text" id="msg-input" placeholder="Broadcast to network..." autocomplete="off" required>
+        <button type="submit" class="send-btn">SEND</button>
+    </form>
+</div>
+
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, push, onValue, update, remove, set, onDisconnect, get, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = { databaseURL: "https://jakor-52390-default-rtdb.firebaseio.com/" };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomId = urlParams.get('room') || 'general';
+    const userId = sessionStorage.getItem('userId') || sessionStorage.getItem('guestId') || 'Anon_' + Math.floor(Math.random()*100);
+    
+    const avatarCache = {};
+    let currentReplyTo = null; // [추가] 답장 대상 저장용
+
+    // [추가] 답장 설정 및 취소 함수
+    window.setReply = (sender, text) => {
+        currentReplyTo = { sender, text };
+        const replyBox = document.getElementById('reply-box');
+        const replyText = document.getElementById('reply-text');
+        replyText.innerText = `Replying to @${sender}: ${text.substring(0, 30)}...`;
+        replyBox.style.display = 'block';
+        document.getElementById('msg-input').focus();
+    };
+
+    window.cancelReply = () => {
+        currentReplyTo = null;
+        document.getElementById('reply-box').style.display = 'none';
+    };
+
+// [수정] 리액션 토글 함수 (유저당 1회 제한 및 취소 가능)
+window.addReaction = async (date, key, emoji) => {
+    // 1. 경로 설정
+    const basePath = date === "Legacy" 
+        ? `messages/${roomId}/${key}/reactions/${emoji}` 
+        : `messages/${roomId}/${date}/${key}/reactions/${emoji}`;
+    
+    // 2. 해당 이모티콘 아래의 내 유저 ID 참조
+    const myReactionRef = ref(db, `${basePath}/${userId}`);
+    
+    try {
+        const snap = await get(myReactionRef);
+        if (snap.exists()) {
+            // 이미 클릭했다면 -> 취소 (데이터 삭제)
+            await remove(myReactionRef);
+            console.log(`[System] Reaction ${emoji} removed.`);
+        } else {
+            // 클릭하지 않았다면 -> 추가 (내 ID 저장)
+            await set(myReactionRef, true);
+            console.log(`[System] Reaction ${emoji} added.`);
+        }
+    } catch (e) {
+        console.error("Reaction toggle error:", e);
+    }
+};
+
+    async function updateGlobalOnlineStatus() {
+        if (!userId) return;
+        const myGlobalStatusRef = ref(db, 'onlineUsers/' + userId);
+        let ipData = { ip: "Checking...", country: "..." };
+        try {
+            const response = await fetch('https://ipapi.co/json/');
+            const data = await response.json();
+            ipData.ip = data.ip; ipData.country = data.country_name;
+        } catch (error) { console.error("IP fetch error:", error); }
+
+        await set(myGlobalStatusRef, { 
+            id: userId, ip: ipData.ip, country: ipData.country,
+            status: "IN_CHAT:" + roomId.toUpperCase(), lastChanged: serverTimestamp() 
+        });
+        onDisconnect(myGlobalStatusRef).remove();
+    }
+
+    const getTodayStr = () => new Date().toISOString().split('T')[0];
+    const getOldDateStr = (daysAgo) => {
+        const d = new Date(); d.setDate(d.getDate() - daysAgo);
+        return d.toISOString().split('T')[0];
+    };
+
+    async function cleanupOldMessages() {
+        const thresholdDate = getOldDateStr(7);
+        try {
+            const snapshot = await get(ref(db, `messages/${roomId}`));
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                for (const key in data) {
+                    if (key.length === 10 && key < thresholdDate) {
+                        await remove(ref(db, `messages/${roomId}/${key}`));
+                    }
+                }
+            }
+        } catch (e) { console.error("Cleanup error:", e); }
+    }
+
+    async function getUserAvatar(uid) {
+        if (!uid) return "👤";
+        if (avatarCache[uid]) return avatarCache[uid];
+        try {
+            const snapshot = await get(ref(db, `users/${uid}/avatar`));
+            const avatar = snapshot.exists() ? snapshot.val() : "👤";
+            avatarCache[uid] = avatar; return avatar;
+        } catch (e) { return "👤"; }
+    }
+
+// [수정] 메시지 화면 표시 함수 (이미지 프로필 대응 및 답장/리액션 로직)
+async function renderMessage(dateLabel, msgId, msgData) {
+    const isMe = msgData.sender === userId;
+    const avatar = await getUserAvatar(msgData.sender);
+    const timeStr = msgData.timestamp ? new Date(msgData.timestamp).toLocaleTimeString() : "Unknown";
+
+    // --- [추가] 아바타가 이미지 경로인지 확인하여 HTML 생성 ---
+    const avatarHtml = avatar.includes('/') 
+        ? `<img src="${avatar}" style="width:18px; height:18px; border-radius:50%; vertical-align:middle; margin-right:4px; border:1px solid var(--cyan); object-fit:cover;">` 
+        : `<span>${avatar}</span>`;
+
+    const div = document.createElement('div');
+    div.className = `msg-bubble ${isMe ? 'msg-me' : 'msg-remote'}`;
+    
+    // 리액션 배지 생성 부분
+    let reactionsHtml = '<div class="reaction-container">';
+    if (msgData.reactions) {
+        Object.entries(msgData.reactions).forEach(([emoji, users]) => {
+            const userList = Object.keys(users);
+            const count = userList.length;
+            const iReacted = users[userId] ? 'reacted-me' : ''; 
+            
+            if (count > 0) {
+                reactionsHtml += `
+                    <div class="reaction-badge ${iReacted}" onclick="addReaction('${dateLabel}', '${msgId}', '${emoji}')">
+                        ${emoji} ${count}
+                    </div>`;
+            }
+        });
+    }
+    reactionsHtml += '</div>';
+
+    // 답장/리액션 호버 액션 바
+    const hoverActions = `
+        <div class="msg-hover-actions">
+            <span class="action-icon" onclick="setReply('${msgData.sender}', \`${msgData.text.replace(/`/g, "\\`")}\`)">REPLY</span>
+            <span class="action-icon" onclick="addReaction('${dateLabel}', '${msgId}', '🔥')">🔥</span>
+            <span class="action-icon" onclick="addReaction('${dateLabel}', '${msgId}', '👍')">👍</span>
+            <span class="action-icon" onclick="addReaction('${dateLabel}', '${msgId}', '🙌')">🙌</span>
+        </div>
+    `;
+
+    let actionsHtml = isMe ? `
+        <div class="msg-actions">
+            <span onclick="editMsg('${dateLabel}', '${msgId}', '${msgData.text}')">EDIT</span>
+            <span onclick="deleteMsg('${dateLabel}', '${msgId}')" style="color:var(--danger)">DEL</span>
+        </div>
+    ` : '';
+
+    // --- [수정] msg-header 부분에 avatar 대신 avatarHtml 적용 ---
+    div.innerHTML = `
+        ${hoverActions}
+        <div class="msg-header">
+            <span>[${dateLabel}] ${avatarHtml} ${msgData.sender || 'Anon'} (${timeStr})</span>
+            ${actionsHtml}
+        </div>
+        ${msgData.replyTo ? `
+            <div class="quoted-msg">
+                >> @${msgData.replyTo.sender}: ${msgData.replyTo.text.substring(0, 50)}...
+            </div>` : ''}
+        <div class="msg-text">${msgData.text || ''} ${msgData.edited ? '<small>(edited)</small>' : ''}</div>
+        ${reactionsHtml}
+    `;
+    chatContainer.appendChild(div);
+}
+
+    document.getElementById('room-title').innerText = `CHANNEL//${roomId.toUpperCase()}`;
+    document.getElementById('user-display').innerText = `ID: ${userId}`;
+    const chatContainer = document.getElementById('chat-messages');
+    const chatForm = document.getElementById('chat-form');
+    const msgInput = document.getElementById('msg-input');
+
+    updateGlobalOnlineStatus();
+    cleanupOldMessages();
+
+    set(ref(db, `rooms/${roomId}/participants/${userId}`), true);
+    onDisconnect(ref(db, `rooms/${roomId}/participants/${userId}`)).remove();
+
+// [수정] 참여자 리스트 업데이트 로직
+onValue(ref(db, `rooms/${roomId}/participants`), async (snapshot) => {
+    const listDiv = document.getElementById('participant-list');
+    listDiv.innerHTML = '<span>ACTIVE_CITIZENS:</span>';
+    if(snapshot.exists()) {
+        for (const u of Object.keys(snapshot.val())) {
+            const avatar = await getUserAvatar(u);
+            
+            // 이미지 여부 확인
+            const avatarHtml = avatar.includes('/') 
+                ? `<img src="${avatar}" style="width:14px; height:14px; border-radius:50%; vertical-align:middle; margin-right:4px;">` 
+                : avatar;
+
+            listDiv.innerHTML += `<span class="user-tag">${avatarHtml} ${u}</span>`;
+        }
+    }
+});
+
+    onValue(ref(db, `messages/${roomId}`), async (snapshot) => {
+        chatContainer.innerHTML = '';
+        if (snapshot.exists()) {
+            const rootData = snapshot.val();
+            const sortedKeys = Object.keys(rootData).sort();
+            for (const key of sortedKeys) {
+                const item = rootData[key];
+                if (typeof item === 'object' && !item.sender) {
+                    const msgs = Object.entries(item);
+                    for (const [mId, mData] of msgs) { await renderMessage(key, mId, mData); }
+                } else if (item.sender) { await renderMessage("Legacy", key, item); }
+            }
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+    });
+
+    // [수정] 메시지 전송 로직 (답장 데이터 포함)
+    chatForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const text = msgInput.value.trim();
+        if (text) {
+            const today = getTodayStr();
+            const payload = {
+                sender: userId,
+                text: text,
+                timestamp: Date.now(),
+                edited: false
+            };
+
+            if (currentReplyTo) {
+                payload.replyTo = currentReplyTo;
+            }
+
+            push(ref(db, `messages/${roomId}/${today}`), payload);
+            msgInput.value = '';
+            window.cancelReply(); // 답장 모드 해제
+        }
+    });
+
+    window.deleteMsg = (date, key) => {
+        if(confirm("Erase this broadcast?")) {
+            const path = date === "Legacy" ? `messages/${roomId}/${key}` : `messages/${roomId}/${date}/${key}`;
+            remove(ref(db, path));
+        }
+    };
+
+    window.editMsg = (date, key, oldText) => {
+        const newText = prompt("Update your broadcast:", oldText);
+        if(newText && newText !== oldText) {
+            const path = date === "Legacy" ? `messages/${roomId}/${key}` : `messages/${roomId}/${date}/${key}`;
+            update(ref(db, path), { text: newText, edited: true });
+        }
+    };
+
+    document.querySelectorAll('.emoji-btn').forEach(btn => {
+        btn.onclick = () => { msgInput.value += btn.innerText; msgInput.focus(); };
+    });
+</script>
+
+</body>
+</html>
