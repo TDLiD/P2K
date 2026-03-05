@@ -1,9 +1,5 @@
-/* Jakarta Connect - Unified Style System 
-    Cleaned & Optimized Version
-*/
-
 /* ==========================================================================
-   1. 기본 설정 및 변수 (Variables & Reset)
+   1. VARIABLES & RESET
    ========================================================================== */
 :root {
     /* Colors */
@@ -26,8 +22,7 @@
 
 *, *::before, *::after { 
     box-sizing: border-box; 
-    margin: 0; 
-    padding: 0; 
+    margin: 0; padding: 0; 
 }
 
 body {
@@ -39,19 +34,18 @@ body {
     cursor: auto !important;
 }
 
-/* 인터랙션 요소 커서 설정 */
+/* Interaction Elements */
 input[type="text"] { cursor: text !important; }
 .emoji-btn, .send-btn, .action-icon, .reaction-badge, 
 .back-btn, .card, .room-card, .mobile-menu-btn { 
     cursor: pointer !important; 
 }
 
-/* 사용하지 않는 커스텀 커서 요소 숨김 */
+/* Hidden Elements */
 #cursor-dot, #cursor-ring { display: none !important; }
 
-
 /* ==========================================================================
-   2. 네비게이션 바 (Navigation)
+   2. NAVIGATION
    ========================================================================== */
 .navbar { 
     position: fixed; top: 0; width: 100%; height: 70px; 
@@ -65,8 +59,8 @@ input[type="text"] { cursor: text !important; }
 }
 
 .nav-flex { 
-    display: flex; justify-content: space-between; 
-    width: 100%; max-width: 1400px; margin: 0 auto; align-items: center; 
+    display: flex; justify-content: space-between; align-items: center;
+    width: 100%; max-width: 1400px; margin: 0 auto; 
 }
 
 .logo { 
@@ -75,17 +69,25 @@ input[type="text"] { cursor: text !important; }
 }
 .logo span { color: var(--cyan); }
 
-.nav-links { display: flex; gap: 30px; list-style: none; align-items: center; }
+.nav-links { 
+    display: flex; gap: 15px; list-style: none; align-items: center; 
+    flex-wrap: nowrap;
+}
+
+.nav-links li { display: flex; align-items: center; white-space: nowrap; }
+
 .nav-links a { 
     text-decoration: none; color: var(--text-soft); font-size: 0.75rem; 
     letter-spacing: 0.1em; transition: 0.3s; 
 }
 .nav-links a:hover { color: var(--cyan); }
 
+/* Navigation Buttons */
 #signup-btn {
     color: var(--cyan) !important; border: 1px solid var(--cyan);
-    padding: 8px 18px; border-radius: 4px; font-weight: 600;
+    padding: 8px 18px !important; border-radius: 4px; font-weight: 600;
     background: rgba(0, 212, 255, 0.05);
+    display: inline-block; min-width: fit-content; text-align: center;
 }
 #signup-btn:hover { background: var(--cyan); color: var(--bg) !important; }
 
@@ -98,9 +100,8 @@ input[type="text"] { cursor: text !important; }
 
 .mobile-menu-btn { display: none; }
 
-
 /* ==========================================================================
-   3. 히어로 섹션 및 배경 효과 (Hero & FX)
+   3. HERO & BACKGROUND FX
    ========================================================================== */
 .hero { 
     height: 50vh; display: flex; align-items: center; justify-content: center; 
@@ -130,13 +131,11 @@ input[type="text"] { cursor: text !important; }
     position: fixed; inset: 0; z-index: -2; 
     background: #000; overflow: hidden;
 }
-
 .background-slideshow::after {
     content: ''; position: absolute; inset: 0;
     background: linear-gradient(135deg, rgba(1, 2, 4, 0.5), rgba(10, 17, 24, 0.6), rgba(1, 2, 4, 0.5));
     z-index: 1;
 }
-
 .bg-slide {
     position: absolute; inset: 0; background-size: cover; background-position: center;
     opacity: 0; transition: opacity 2s ease-in-out;
@@ -146,11 +145,9 @@ input[type="text"] { cursor: text !important; }
 /* Visual FX Orbs */
 .orb { position: fixed; border-radius: 50%; filter: blur(120px); pointer-events: none; z-index: 0; animation: orb-drift 18s ease-in-out infinite alternate; }
 .orb-1 { width: 600px; height: 600px; background: rgba(0,212,255,0.04); top: -200px; right: -100px; }
-@keyframes orb-drift { 0% { transform: translate(0,0); } 100% { transform: translate(30px,50px); } }
-
 
 /* ==========================================================================
-   4. 메인 레이아웃 및 카드 (Components)
+   4. COMPONENTS (Cards & Layout)
    ========================================================================== */
 .container { 
     max-width: 1200px; margin: 0 auto; padding: 40px 20px 60px; 
@@ -174,14 +171,10 @@ input[type="text"] { cursor: text !important; }
     border-color: var(--cyan); transform: translateY(-5px); 
     box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
 }
-
 .room-card h4 { font-family: var(--font-display); font-size: 1.5rem; color: var(--chrome); margin-bottom: 10px; }
 .room-meta { margin-top: 15px; font-family: var(--font-mono); font-size: 0.65rem; color: var(--gold); }
 
-
-/* ==========================================================================
-   5. 채팅 및 특수 기능 (Chat & UI Features)
-   ========================================================================== */
+/* Chat Bubbles & UI */
 .msg-bubble { position: relative; transition: all 0.2s; }
 .msg-hover-actions {
     position: absolute; top: -20px; right: 10px;
@@ -220,7 +213,7 @@ input[type="text"] { cursor: text !important; }
 }
 .close-reply { position: absolute; right: 10px; top: 10px; color: var(--danger); }
 
-/* Status & Popup */
+/* Status Box */
 .user-status-box {
     position: fixed; bottom: 20px; right: 20px; z-index: 1000;
     background: rgba(13, 26, 36, 0.9); border: 1px solid var(--cyan);
@@ -228,12 +221,9 @@ input[type="text"] { cursor: text !important; }
     font-family: var(--font-mono); font-size: 0.7rem; color: var(--cyan);
     backdrop-filter: blur(10px); max-height: 200px; overflow-y: auto;
 }
+.online-user-item { display: block; margin: 5px 0; opacity: 0.8; font-size: 0.65rem; white-space: nowrap; }
 
-.online-user-item { 
-    display: block; margin: 5px 0; opacity: 0.8; 
-    font-size: 0.65rem; white-space: nowrap; 
-}
-
+/* User Popup */
 .user-popup {
     position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
     background: rgba(10, 17, 24, 0.95); border: 1px solid var(--gold);
@@ -246,10 +236,51 @@ input[type="text"] { cursor: text !important; }
 .user-tag, .msg-header { display: flex; align-items: center; gap: 4px; }
 .user-tag img, .msg-header img { object-fit: cover; display: inline-block; }
 
-
 /* ==========================================================================
-   6. 애니메이션 (Animations)
+   5. SPECIAL EFFECTS (Wavy 3D & Animations)
    ========================================================================== */
+/* Jakarta Blog Wavy 3D */
+nav.navbar .nav-flex ul.nav-links li a.wavy-3d-link {
+    display: inline-flex !important;
+    align-items: center;
+    perspective: 500px !important;
+    text-decoration: none !important;
+    padding: 0 10px !important;
+    background: none !important;
+    border: none !important;
+}
+
+nav.navbar .nav-flex ul.nav-links li a.wavy-3d-link span.wavy-3d-text {
+    display: inline-block !important;
+    font-weight: 900 !important;
+    font-size: 0.85rem !important;
+    color: #ffffff !important;
+    letter-spacing: 1px !important;
+    text-transform: uppercase !important;
+    text-shadow: 0 1px 0 #00c853, 0 2px 0 #00b248, 0 3px 0 #009a3e, 0 4px 6px rgba(0, 0, 0, 0.6) !important;
+    animation: wave3D 2.5s ease-in-out infinite !important;
+    transform-origin: center !important;
+    transition: none !important;
+}
+
+nav.navbar .nav-flex ul.nav-links li a.wavy-3d-link:hover span.wavy-3d-text {
+    animation: wave3D 0.8s ease-in-out infinite !important;
+    color: var(--cyan) !important;
+}
+
+/* Animations */
+@keyframes wave3D {
+    0%, 100% { transform: translateY(0) rotateX(0deg); }
+    25% { 
+        transform: translateY(-6px) rotateX(25deg);
+        text-shadow: 0 1px 0 #00e676, 0 5px 15px rgba(0, 255, 119, 0.4);
+    }
+    75% { 
+        transform: translateY(6px) rotateX(-25deg);
+        text-shadow: 0 1px 0 #007a31, 0 2px 8px rgba(0, 0, 0, 0.8);
+    }
+}
+
 @keyframes fadeIn { 
     from { opacity: 0; transform: translate(-50%, 10px); } 
     to { opacity: 1; transform: translate(-50%, 0); } 
@@ -259,20 +290,32 @@ input[type="text"] { cursor: text !important; }
     0%, 100% { opacity: 1; color: var(--gold); } 
     50% { opacity: 0.3; color: #fff; } 
 }
+@keyframes orb-drift { 0% { transform: translate(0,0); } 100% { transform: translate(30px,50px); } }
 
 .me-blink { animation: blink-me 1.5s infinite; font-weight: bold; text-shadow: 0 0 8px var(--gold); }
 .status-dot { width: 8px; height: 8px; background: var(--cyan); border-radius: 50%; display: inline-block; animation: pulse 2s infinite; }
 
-
 /* ==========================================================================
-   7. 반응형 (Responsive - Mobile Optimization)
+   6. RESPONSIVE OPTIMIZATION
    ========================================================================== */
+/* Desktop Adjustments (Gap/Margin) */
+@media (min-width: 769px) {
+    #login-btn { margin-left: 10px !important; }
+}
+
+/* Mid-Size Screens (Tablet) */
+@media (max-width: 1100px) and (min-width: 769px) {
+    .nav-links { gap: 10px; }
+    .nav-links a { font-size: 0.7rem; }
+    nav.navbar .nav-flex ul.nav-links li a.wavy-3d-link span.wavy-3d-text { font-size: 0.75rem !important; }
+}
+
+/* Mobile Screens */
 @media (max-width: 768px) {
     .navbar { padding: 0 20px; }
-    
     .nav-flex { position: relative; justify-content: space-between; }
 
-    /* 햄버거 버튼 활성화 */
+    /* Hamburger Menu */
     .mobile-menu-btn {
         display: block !important;
         background: none; border: none;
@@ -280,7 +323,6 @@ input[type="text"] { cursor: text !important; }
         z-index: 1001;
     }
 
-    /* 모바일 네비게이션 메뉴 슬라이드 */
     .nav-links {
         position: fixed; top: 0; right: -100%;
         width: 75%; height: 100vh; height: calc(var(--vh, 1vh) * 100);
@@ -288,22 +330,22 @@ input[type="text"] { cursor: text !important; }
         flex-direction: column; justify-content: center; align-items: center;
         transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         z-index: 1000; border-left: 1px solid var(--border);
-        gap: 0;
+        gap: 20px;
     }
 
     .nav-links.active { right: 0; }
     .nav-links li { margin: 15px 0 !important; width: 100%; text-align: center; }
     .nav-links a { font-size: 1rem; display: block; padding: 10px; }
-
-    /* UI 조정 */
-    .hero-title { font-size: 2.5rem; padding: 0 20px; }
     
+    #login-btn { margin-left: 0 !important; }
+
+    /* Mobile UI Adjustments */
+    .hero-title { font-size: 2.5rem; padding: 0 20px; }
     .user-status-box { 
         bottom: 20px; right: 10px; left: 10px; 
         max-width: none; width: calc(100% - 20px); 
         max-height: 150px; 
     }
-
     .container { padding: 20px 15px; }
     .room-grid { grid-template-columns: 1fr; }
 }
