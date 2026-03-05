@@ -10,8 +10,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
     <!-- Main Styles -->
     <link rel="stylesheet" href="css/style.css">
@@ -96,37 +94,86 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        /* ── 1. Header Loader with Full Auth Integration ── */
-        async function loadHeader() {
-            try {
-                const response = await fetch('components/header.html');
-                if (!response.ok) throw new Error('Header not found');
-                
-                const data = await response.text();
-                const placeholder = document.getElementById('header-placeholder');
-                placeholder.innerHTML = data;
-                
-                // Initialize Lucide icons
-                if (window.lucide) lucide.createIcons();
-                
-                // Setup scroll effect
-                const mainNav = document.getElementById('mainNav');
-                if (mainNav) {
-                    window.addEventListener('scroll', () => {
-                        mainNav.classList.toggle('scrolled', window.scrollY > 40);
-                    }, { passive: true });
-                }
+/* ── 1. [수정] Header Loader: 경로 보정 및 Wavy 애니메이션 추가 ── */
+async function loadHeader() {
+    try {
+        const response = await fetch('components/header.html');
+        if (!response.ok) throw new Error('Header not found');
+        
+        const data = await response.text();
+        const placeholder = document.getElementById('header-placeholder');
+        if (placeholder) {
+            placeholder.innerHTML = data;
 
-                // Setup mobile menu
-                setupMobileMenu();
-                
-                // Update auth UI with same logic as index.html
-                await updateAuthUI();
-                
-            } catch (err) {
-                console.error("Header Load Error:", err);
+            // index.html과 마찬가지로 루트에 있으므로 경로에서 ../ 제거
+            const links = placeholder.querySelectorAll('a');
+            links.forEach(link => {
+                let href = link.getAttribute('href');
+                if (href && !href.startsWith('http') && !href.startsWith('#')) {
+                    link.setAttribute('href', href.replace('../', ''));
+                }
+            });
+
+            // Wavy 애니메이션 실행 (header.html에 정의된 함수 호출)
+            if (typeof window.initWavyMenu === 'function') {
+                window.initWavyMenu();
             }
+
+            // UI 요소 초기화
+            if (window.lucide) lucide.createIcons();
+            
+            const mainNav = document.getElementById('mainNav');
+            if (mainNav) {
+                window.addEventListener('scroll', () => {
+                    mainNav.classList.toggle('scrolled', window.scrollY > 40);
+                }, { passive: true });
+            }
+
+            setupMobileMenu();
+            await updateAuthUI();
         }
+    } catch (err) {
+        console.error("Header Load Error:", err);
+    }
+}
+
+/* ── 6. [수정] Stats Loader: Firebase 10(SDK) 방식으로 통일 ── */
+async function loadStats() {
+    try {
+        // 1. 상단에서 import한 db, ref, get을 사용하여 데이터 가져오기
+        const statsRef = ref(db, 'stats');
+        const statsSnap = await get(statsRef);
+        
+        if (statsSnap.exists()) {
+            const s = statsSnap.val();
+            const card = document.getElementById('statCard');
+            const rows = document.getElementById('statRows');
+
+            if (card && rows) {
+                // 데이터가 있으면 카드를 표시
+                card.style.display = 'block';
+                
+                // HTML 초기화 후 데이터 삽입 (visits가 없을 경우를 대비해 0 처리)
+                const visits = s.visits ? s.visits.toLocaleString() : "0";
+                
+                rows.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border); font-family:var(--font-mono); font-size:0.7rem;">
+                        <span style="color:var(--text-soft);">SYSTEM_VISITS</span>
+                        <span style="color:var(--cyan); font-weight: bold;">${visits}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; padding:10px 0; font-family:var(--font-mono); font-size:0.7rem;">
+                        <span style="color:var(--text-soft);">DATABASE_STATUS</span>
+                        <span style="color:var(--gold); font-weight: bold;">ONLINE</span>
+                    </div>
+                `;
+            }
+        } else {
+            console.log("No stats data available");
+        }
+    } catch (e) {
+        console.error("Stats Load Error (Firebase V10):", e);
+    }
+}
 
         /* ── 2. Mobile Menu Setup (Same as index.html) ── */
         function setupMobileMenu() {
@@ -239,26 +286,7 @@ async function updateAuthUI() {
             requestAnimationFrame(animRing);
         })();
 
-        /* ── 6. Stats Loader ── */
-        function loadStats() {
-            if (typeof firebase !== 'undefined' && firebase.database) {
-                firebase.database().ref('stats').once('value', snap => {
-                    const s = snap.val() || {};
-                    if (!s.visits) return;
-                    const card = document.getElementById('statCard');
-                    const rows = document.getElementById('statRows');
-                    if (card && rows) {
-                        card.style.display = 'block';
-                        rows.innerHTML = `
-                            <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:0.7rem;">
-                                <span style="color:var(--text-soft);">SYSTEM_VISITS</span>
-                                <span style="color:var(--cyan); font-weight: bold;">${s.visits.toLocaleString()}</span>
-                            </div>`;
-                    }
-                });
-            }
-        }
-
+  
         /* ── 7. Hero Background Setter ── */
         function setHeroBg(src) {
             const bg = document.getElementById('heroBg');
