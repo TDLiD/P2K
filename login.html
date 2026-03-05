@@ -100,7 +100,7 @@
         </div>
     </div>
 
-    <script type="module">
+  <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
@@ -149,15 +149,26 @@
                         sessionStorage.setItem('isLoggedIn', 'true');
                         sessionStorage.setItem('userId', id);
 
-                        // --- 수정된 부분: ID가 admin이면 admin.html로, 아니면 index.html로 이동 ---
+                        // --- [수정된 부분] 이전 페이지 주소에 따른 리다이렉션 로직 ---
                         setTimeout(() => {
+                            // 1. 관리자 계정 체크
                             if (id === 'admin') {
                                 location.href = 'admin.html';
+                                return;
+                            }
+
+                            // 2. 이전 페이지(Referrer) 확인
+                            const prevPage = document.referrer;
+                            
+                            if (prevPage.includes('blog.html')) {
+                                // blog.html에서 왔다면 다시 blog.html로
+                                location.href = 'blog.html';
                             } else {
+                                // 그 외(index.html 포함)에는 index.html로
                                 location.href = 'index.html';
                             }
                         }, 1500);
-                        // ------------------------------------------------------------------
+                        // --------------------------------------------------------
                         
                     } else {
                         msgBox.innerText = "ERROR: Password does not match.";
