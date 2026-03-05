@@ -10,13 +10,43 @@
             <li><a href="pages/board.html">Community</a></li>
             <li><a href="pages/market.html">Marketplace</a></li>
             <li><a href="pages/info.html">Local Info</a></li>
-            <li>
-                <a href="blog.html">Jakarta Blog</a>
-            </li>   
+            <li><a href="blog.html">Jakarta Blog</a></li>   
+            
             <li class="nav-divider"></li>
             <li class="auth-links"><a href="login.html" id="login-btn">Login</a></li>
             <li class="auth-links"><a href="signup.html" id="signup-btn" class="btn-signup">Sign Up</a></li>
         </ul>
     </div>
-
 </nav>
+
+<style>
+/* 기존 Wavy 및 애니메이션 스타일 유지 */
+.wavy-char { display: inline-block; white-space: pre; }
+.active-wavy { color: var(--cyan); font-weight: bold; }
+</style>
+
+<script>
+// 이 함수는 각 페이지의 loadHeader 내에서 호출됩니다.
+window.initWavyMenu = function() {
+    const navLinks = document.querySelectorAll('#navLinks a');
+    const currentPath = window.location.pathname;
+    const fileName = currentPath.split('/').pop() || 'index.html';
+
+    navLinks.forEach(link => {
+        const href = link.getAttribute('href');
+        // 파일명이 일치하거나 (index.html), 경로에 포함되어 있으면 활성화
+        if (href.includes(fileName)) {
+            link.classList.add('active-wavy');
+            const text = link.textContent;
+            link.innerHTML = '';
+            [...text].forEach((char, i) => {
+                const span = document.createElement('span');
+                span.style.setProperty('--i', i);
+                span.classList.add('wavy-char');
+                span.textContent = char;
+                link.appendChild(span);
+            });
+        }
+    });
+};
+</script>
