@@ -42,13 +42,19 @@
                 <i data-lucide="menu"></i>
             </button>
 
-            <ul class="nav-links" id="navLinks">
-                <li><a href="pages/board.html">Community</a></li>
-                <li><a href="pages/market.html">Marketplace</a></li>
-                <li><a href="pages/info.html">Local Info</a></li>
-                <li style="margin-left: 20px;"><a href="login.html" id="login-btn">Login</a></li>
-                <li><a href="signup.html" id="signup-btn">Sign Up</a></li>
-            </ul>
+<ul class="nav-links" id="navLinks">
+    <li><a href="pages/board.html">Community</a></li>
+    <li><a href="pages/market.html">Marketplace</a></li>
+    <li><a href="pages/info.html">Local Info</a></li>
+    <li>
+        <a href="https://tdlid.github.io/Jakarta-blog" target="_blank" class="wavy-3d-link">
+            <span class="wavy-3d-text">Jakarta Blog</span>
+        </a>
+    </li>   
+    <li style="margin-left: 20px;"><a href="login.html" id="login-btn">Login</a></li>
+    <li><a href="signup.html" id="signup-btn">Sign Up</a></li>
+</ul>
+
         </div>
     </nav>
 
@@ -324,26 +330,34 @@ setVh();
 const menuToggle = document.getElementById('menuToggle');
 const navLinksContainer = document.getElementById('navLinks');
 
-if(menuToggle && navLinksContainer) {
+// [G. 모바일 최적화 및 메뉴 제어 수정본]
+if (menuToggle && navLinksContainer) {
     menuToggle.addEventListener('click', () => {
         navLinksContainer.classList.toggle('active');
         const icon = menuToggle.querySelector('i');
-        // 아이콘 스위칭 (menu <-> x)
-        if(navLinksContainer.classList.contains('active')) {
-            icon.setAttribute('data-lucide', 'x');
-        } else {
-            icon.setAttribute('data-lucide', 'menu');
+        
+        // 아이콘이 존재할 때만 속성 변경 (에러 방지)
+        if (icon) {
+            if (navLinksContainer.classList.contains('active')) {
+                icon.setAttribute('data-lucide', 'x');
+            } else {
+                icon.setAttribute('data-lucide', 'menu');
+            }
+            if (window.lucide) lucide.createIcons();
         }
-        if(window.lucide) lucide.createIcons();
     });
 
     // 메뉴 링크 클릭 시 메뉴 닫기 (모바일용)
     navLinksContainer.querySelectorAll('a').forEach(link => {
         link.addEventListener('click', () => {
             navLinksContainer.classList.remove('active');
+            
             const icon = menuToggle.querySelector('i');
-            icon.setAttribute('data-lucide', 'menu');
-            if(window.lucide) lucide.createIcons();
+            // 아이콘이 존재할 때만 속성 변경 및 렌더링
+            if (icon) {
+                icon.setAttribute('data-lucide', 'menu');
+                if (window.lucide) lucide.createIcons();
+            }
         });
     });
 }
