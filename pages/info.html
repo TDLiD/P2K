@@ -494,13 +494,28 @@ window.onload = async () => {
             if (isLoggedIn === 'true' && userId && loginBtn) {
                 let userAvatar = "👤"; 
                 try {
-                    const userSnap = await get(ref(db, `users/${userId}`));
-                    if (userSnap.exists() && userSnap.val().avatar) {
-                        userAvatar = userSnap.val().avatar;
-                        if (!userAvatar.includes('/')) {
-                            userAvatar = `../images/profiles/${userAvatar}`;
-                        }
-                    }
+const userSnap = await get(ref(db, `users/${userId}`));
+if (userSnap.exists() && userSnap.val().avatar) {
+    let avatarData = userSnap.val().avatar;
+    
+    // ../images/... 형태면 그대로 사용
+    if (avatarData.startsWith('../')) {
+        userAvatar = avatarData;
+    }
+    // images/profiles/... 형태면 ../ 추가
+    else if (avatarData.startsWith('images/')) {
+        userAvatar = '../' + avatarData;
+    }
+    // image-029.gif 처럼 파일명만 있으면 경로 조합
+    else if (avatarData.includes('image-') && !avatarData.includes('/')) {
+        userAvatar = `../images/profiles/${avatarData}`;
+    }
+    // 그 외 (이모지 등)
+    else {
+        userAvatar = avatarData;
+    }
+}
+
                 } catch (e) { console.error("Avatar Load Error:", e); }
 
                 const avatarHtml = (userAvatar.includes('/') || userAvatar.includes('http')) 
