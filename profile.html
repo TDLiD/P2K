@@ -90,7 +90,8 @@
 
         <div class="avatar-section">
             <label>CITIZEN_AVATAR_MODULE</label>
-            <img id="current-avatar-img" src="../images/profiles/image-001.gif" alt="Current Avatar">
+            <img id="current-avatar-img" src="https://tdlid.github.io/jakarta/images/profiles/image-001.gif" alt="Current Avatar">
+
             <div class="avatar-grid" id="avatar-picker">
                 </div>
         </div>
@@ -156,8 +157,12 @@
 
         const userId = sessionStorage.getItem('userId');
         const isLoggedIn = sessionStorage.getItem('isLoggedIn');
-        let selectedAvatarPath = "../images/profiles/image-001.gif"; // 기본값
+const isGitHubPages = location.hostname.includes('github.io');
+const BASE_URL = isGitHubPages 
+    ? 'https://tdlid.github.io/jakarta/images/profiles/'
+    : '../images/profiles/';
 
+let selectedAvatarPath = `${BASE_URL}image-001.gif`;
         if (!isLoggedIn || !userId) {
             alert("Access denied. Please login first.");
             location.href = "login.html";
@@ -170,7 +175,8 @@
         // 1. 이미지 아이템 생성 (001 ~ 029)
         for (let i = 1; i <= 29; i++) {
             const fileName = `image-${String(i).padStart(3, '0')}.gif`;
-            const filePath = `../images/profiles/${fileName}`;
+            const filePath = `${BASE_URL}${fileName}`;
+
             
             const item = document.createElement('div');
             item.className = 'avatar-item';
